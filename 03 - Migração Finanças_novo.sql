@@ -2541,7 +2541,7 @@ SELECT his1.historicodespesamedica,his1.despesamedica,his1.data,his1.origem,his1
        his1.segurosaude,his1.lastupdate,his1.tenant
 FROM   financasmigration.historicodespesamedica his1
 LEFT JOIN financas.historicodespesamedica his2 ON his1.despesamedica = his2.despesamedica AND his1.data = his2.data AND his1.origem = his2.origem AND his1.planosaude = his2.planosaude
-WHERE his2.historicodespesamedica;
+WHERE his2.historicodespesamedica is null;
 
 --financas.historicosanalisesinadimplencias
 
@@ -2570,9 +2570,10 @@ INSERT INTO financas.historicosanalisesinadimplenciasitens
 SELECT his1.historicoanaliseinadimplenciaitem,his1.historicoanaliseinadimplencia,his1.titulo,
        his1.titulonumero,his1.tituloemissao,his1.titulovencimento,his1.titulovalor,his1.lastupdate,his1.tenant
 FROM   financasmigration.historicosanalisesinadimplenciasitens his1
-LEFT JOIN financas.historicosanalisesinadimplenciasitens his2 ON his1.titulo = his2.grupoempresarial AND his1.historicoanaliseinadimplencia = his2.historicoanaliseinadimplencia
+LEFT JOIN financas.historicosanalisesinadimplenciasitens his2 ON his1.titulo = his2.titulo AND his1.historicoanaliseinadimplencia = his2.historicoanaliseinadimplencia
 WHERE his2.historicoanaliseinadimplenciaitem is null;
 
+/*
 --financas.historicoschequescustodias
 
 INSERT INTO financas.historicoschequescustodias
@@ -2584,6 +2585,7 @@ SELECT id,id_chequecustodia,id_titulo,id_usuario,data,login,nomeusuario,
        numero_titulo,
        valor_titulo,valor_utilizado,nomepessoa_titulo,acao,lastupdate,tenant
 FROM   financasmigration.historicoschequescustodias;
+*/
 
 --financas.historicostitulos
 
@@ -2695,6 +2697,15 @@ SELECT tipomovimentacao,situacao,versao,borderoeletronico,itemborderoeletronico,
        titulopagar,contafornecedor,valor,lastupdate,tenant
 FROM   financasmigration.itensborderoseletronicos;
 
+--financas.orcamentos
+
+INSERT INTO financas.orcamentos
+            (orcamento,descricao,aprovado,data_criacao,cenarioorcamentario,
+             lastupdate,tenant)
+SELECT orcamento,descricao,aprovado,data_criacao,cenarioorcamentario,lastupdate,
+       tenant
+FROM   financasmigration.orcamentos;
+
 --financas.itenscenariosorcamentarios
 
 INSERT INTO financas.itenscenariosorcamentarios
@@ -2708,6 +2719,7 @@ SELECT itemcenarioorcamentario,cenarioorcamentario,mes,valor,
        lastupdate,tenant
 FROM   financasmigration.itenscenariosorcamentarios;
 
+/*
 --financas.itenschequescustodiasendossos
 
 INSERT INTO financas.itenschequescustodiasendossos
@@ -2731,7 +2743,7 @@ SELECT id,id_chequecustodia,id_titulo,id_baixa,numero_titulo,emissao_titulo,
        vencimento_titulo,valor_titulo,nomecliente_titulo,codigoconta_titulo,
        valorusadonabaixa,lastupdate,tenant
 FROM   financasmigration.itenschequescustodiasrecebimentos;
-
+*/
 --financas.itenschequespagamentos
 
 INSERT INTO financas.itenschequespagamentos
@@ -2973,10 +2985,13 @@ INSERT INTO financas.layoutscobrancascartoes
             (nome,implementacao,versao,layoutcobrancacartao,meioeletronicocartao
              ,lastupdate,
              tenant)
-SELECT nome,implementacao,versao,layoutcobrancacartao,meioeletronicocartao,
-       lastupdate,
-       tenant
-FROM   financasmigration.layoutscobrancascartoes;
+SELECT lay1.nome,lay1.implementacao,lay1.versao,lay1.layoutcobrancacartao,lay1.meioeletronicocartao,
+       lay1.lastupdate,
+       lay1.tenant
+FROM   financasmigration.layoutscobrancascartoes lay1
+LEFT JOIN financas.layoutscobrancascartoes lay2 ON lay1.nome = lay2.nome
+WHERE çay2.layoutcobrancacartao;
+
 
 --financas.layoutscustodiacheques
 
@@ -3159,15 +3174,6 @@ INSERT INTO financas.operadorascartoes
             (codigo,versao,operadoracartao,lastupdate,tenant)
 SELECT codigo,versao,operadoracartao,lastupdate,tenant
 FROM   financasmigration.operadorascartoes;
-
---financas.orcamentos
-
-INSERT INTO financas.orcamentos
-            (orcamento,descricao,aprovado,data_criacao,cenarioorcamentario,
-             lastupdate,tenant)
-SELECT orcamento,descricao,aprovado,data_criacao,cenarioorcamentario,lastupdate,
-       tenant
-FROM   financasmigration.orcamentos;
 
 --financas.periodos
 
