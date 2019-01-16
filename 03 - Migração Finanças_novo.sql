@@ -412,7 +412,7 @@ SELECT pes1.pessoa,pes1.datacadastro,pes1.proximocontato,pes1.nome,pes1.nomefant
        --desabilitadopersona,
        pes1.lastupdate,pes1.tenant
 FROM   nsmigration.pessoas pes1
-LEFT JOIN ns.pessoas pes2 ON pes1.cnpj = pes2.cnpj AND pes1.nome = pes2.nome
+LEFT JOIN ns.pessoas pes2 ON pes1.cnpj = pes2.cnpj AND pes1.pessoa = pes2.pessoa
 WHERE pes2.id is null;
 
 --ns.classificadores
@@ -501,15 +501,17 @@ INSERT INTO ns.naturezascontratos
              qtddiasemissaotitulo,diaparafaturamento,usardataconclusaonegocio,
              indice,unidadeperiodoproposta,valorunidadeperiodoproposta,
              usarindicevariavel,lastupdate,tenant)
-SELECT id,id_owner,qtdmesesparareajuste,qtddiasparafim,qtddiasparainicio,
-       percentualdesconto,percentualmulta,percentualjurosdiarios,tipocobranca,
-       diavencimento,tipovencimento,unidadeintervalonatureza,
-       quantidadeintervalonatureza,adicaomesesvencimento,unidadenatureza,
-       dataproximoreajuste,considerardatainicio,parcelaatual,parcelafinal,
-       parcelainicial,processaperiodoanterior,tipoemissao,qtddiasemissaotitulo,
-       diaparafaturamento,usardataconclusaonegocio,indice,unidadeperiodoproposta
-       ,valorunidadeperiodoproposta,usarindicevariavel,lastupdate,tenant
-FROM   nsmigration.naturezascontratos;
+SELECT nat1.id,nat1.id_owner,nat1.qtdmesesparareajuste,nat1.qtddiasparafim,nat1.qtddiasparainicio,
+       nat1.percentualdesconto,nat1.percentualmulta,nat1.percentualjurosdiarios,nat1.tipocobranca,
+       nat1.diavencimento,nat1.tipovencimento,nat1.unidadeintervalonatureza,
+       nat1.quantidadeintervalonatureza,nat1.adicaomesesvencimento,nat1.unidadenatureza,
+       nat1.dataproximoreajuste,nat1.considerardatainicio,nat1.parcelaatual,nat1.parcelafinal,
+       nat1.parcelainicial,nat1.processaperiodoanterior,nat1.tipoemissao,nat1.qtddiasemissaotitulo,
+       nat1.diaparafaturamento,nat1.usardataconclusaonegocio,nat1.indice,nat1.unidadeperiodoproposta
+       ,nat1.valorunidadeperiodoproposta,nat1.usarindicevariavel,nat1.lastupdate,nat1.tenant
+FROM   nsmigration.naturezascontratos nat1
+LEFT JOIN ns.naturezascontratos nat2 ON nat1.id = nat2.id
+WHERE nat2.id is null;
 
 --ns.pessoasmunicipios
 
@@ -758,84 +760,86 @@ INSERT INTO ns.df_docfis
              reinf_maodeobra,id_transacaofinanceira,id_contratofinanceiro,
              codigo_verificacao,rota,rota_liberado,id_opeinterna,id_moeda,
              id_cotacao,xmlexplodido,lastupdate,tenant)
-SELECT id_ano,sinal,tipo,modelo,serie,subserie,numero,periodo,lancamento,emissao
-       ,cfop,
-       cfopservico,tppessoa,atenumero,datainiserv,datafimserv,datasaida,
-       datadeclaracao,datanotaconhec,horasaida,porcaixa,petroleo,notafatura,
-       cfopdif,cfopserdif,cancelado,orgaopublico,somaiss,issoutromunic,
-       retautomatica,retemiss,retemir,reteminss,retemcofins,retemcsll,retempis,
-       retorno,porcontigencia,versao,situacao,situacaosped,tipocalctrib,
-       tpligacao,grupotensao,crt,messerv,anoserv,tiponfe,tpoperador,
-       tpconsignatario,consumidor,tiporedespacho,remas,rapis,tipofrete,
-       tiporecolhimento,tipotransporte,volumes,tipodocexterior,parcelas,
-       tipocontab,mesescredicms,anoaidf,anopexpam,tipoimp,classe,tiporeceita,
-       tipoconsumo,tiponavegacao,tipoveiculo,naturezafrete,tipotarifaar,chavene,
-       chaveneini,chavene01,chavene02,chavene03,chavene04,chavenefim,codigoirrf,
-       codigopis,codigocsll,codigocofins,numacdraw,campoligacao,terminal,codarea
-       ,rntrc,serierps,rps,cnae,codmunic,codserv,municdest,codif,numerofrete,
-       marca,tipovolume,placa,placa02,placa03,ufplaca,ufplaca02,ufplaca03,
-       doccomexterior,parcelamento,renavam,codigodip,observacao,obsestoque,
-       selofiscal,aidf,numeropexpam,lacre,unidadecarga,frota,veiculo,viagem,otm,
-       frete,seguro,basetransp,iss,deducaoiss,inss,ir,valoriss,baseiss,baseinss,
-       valorinss,valorinssadicional,valorinssnaoretido,valorinsssubempreitada,
-       baseir,valorir,basecofins,valorcofins,basecsll,valorcsll,basepis,valorpis
-       ,deducaobaseir,valordeducaoir,desconto,mercadorias,servicos,valor,
-       valorliquido,diferenca,valordestacado,baseicms,icms,valoricms,icmsnaocred
-       ,isentasicms,outrasicms,reducaoicms,reducaoipi,baseipi,valoripi,ipi,
-       isentasipi,outras,basesubst,substprop,substterc,substnaoret,icmsretido,
-       pisimp,cofinsimp,basepisimp,basecofinsimp,valorpisimp,valorcofinsimp,
-       consumo,kwh,fretemm,pesotx,freteliquido,valorsec_cat,despacho,pedagio,
-       despportuarias,cargadescarga,taxaterrestre,advalorem,valorgris,
-       outrosvalores,pesobruto,pesoliquido,cubagem,anotacoes,percbaseinss,
-       percbaseir,id_itemntr,id,id_conhectransp,id_estabelecimento,id_orgao,
-       id_operador,id_redespachador,id_emitente,id_pessoa,id_consignatario,
-       id_coleta,id_entrega,id_remetente,id_destinatario,id_transportadora,
-       id_motorista,id_obra,id_grupodiferenciado,id_scp,tipodocumento,
-       xml_docengine,xml_transmitido,tipopedido,formapagamento,autorizacaocartao
-       ,documentocartao,dataautorizacaocartao,valoravista,vezescartao,anotacao,
-       id_proposta,id_grupoempresarial,id_promocao,id_posicaoworkflow,
-       id_midiaorigem,id_conta,id_layoutbancario,id_informacaocartao,datanegocio
-       ,aprovadopor,datahoraaprovacao,acrescimofinanceiro,origem,
-       id_objetoservico,id_docfis,id_cfop,discriminacaoservicos,statusrps,
-       tiporps,tipotributacaoservicorps,regimeespecialtributacao,
-       incentivocultural,ufprestacaoservico,cidadeprestacaoservico,
-       id_estabelecimentocontraparte,descricaopagamento,datavalidade,contato,
-       informacoespedido,id_oportunidade,id_parcelamento,id_docproposta,
-       xml_cancelamento,motivo_cancelamento,data_cancelamento,datacriacao,
-       horacriacao,referenciaexterna,tipoordemservico,origemordemservico,
-       contrato,processamentocontrato,id_pedido,documento_operacao,
-       documento_operacao_codigo,xml_titulos,ordemservico_id,caixa,pontodevenda,
-       id_serie,dataentradasaida,tipoemitente,tiporeceptor,formadepagamento,
-       tipooperacao,uffatogerador,modocompra,tipodeemissao,chave,
-       observacao_movimentacao,tabeladepreco,id_localdeestoqueorigem,
-       id_localdeestoquedestino,df_endereco_retirada,df_endereco_entrega,
-       municipiofatogerador,xml_contingencia,datacontingencia,
-       justificativacontingencia,debitoautomatico,contigencia_justificativa,
-       contigencia_imprimiu,contigencia_datahora,numeroprotocolo,tipoambiente,
-       lotecobrancaordemservico_id,documentorateado,requisicaoalmoxarifado_id,
-       gerafinanceiro,id_conjunto_anexo,descricaoservicos,rps_original,
-       tipo_retencao_iss,xml_rps,anotacoes_sistema,anotacoes_manuais,uf_embarque
-       ,local_embarque,local_despacho,origemdocumento,link_nfse,
-       id_documento_vinculado,pessoamunicipio,id_usuario_cadastro,prazoentrega,
-       notaimportacao,chavegold,wkf_data,wkf_estado,usuario_solicitacao_id,
-       usuario_solicitacao_data,situacaogerencial,emailenviado,totalvalorfaturar
-       ,id_instancia,finalidadeemissao,id_operacao_nfs,analistacompra,
-       infopiscompra,infocofinscompra,infoicmscompra,infoicmsstcompra,
-       infoipicompra,status,vendedor,categoriadeproduto,uf_habilitacao,
-       tipo_assinante,autenticacao_lote_digital,outras_retencoes,numero_titulo,
-       vbcufdest,pfcpufdest,picmsufdest,picmsinter,picmsinterpart,vfcpufdest,
-       vicmsufdest,vicmsufremet,dataprevisao_entradasaida,
-       template_discriminacaorps,indiedest,sistema,tipo_insercao,reconstruirxml,
-       indfinal,iddest,indpres,id_pedidoservico,iddestinoremessa,lotedigital,
-       pretituloverificado,possuiadiantamento,tabeladefrete,
-       observacao_dadosgerais,rascunho,recalcularimpostos,nota_antecipada,
-       id_rateiopadrao,volumemanual,status_conferencia,outrosacrescimos,
-       titulo_observacao,projeto_padrao_id,numeroexterno,naturezaoperacao,
-       total_desconto,id_docfis_contrato,versao_dfe,troco,
-       tipointegracao_pagamento,reinf_maodeobra,id_transacaofinanceira,
-       id_contratofinanceiro,codigo_verificacao,rota,rota_liberado,id_opeinterna
-       ,id_moeda,id_cotacao,xmlexplodido,lastupdate,tenant
-FROM   nsmigration.df_docfis;
+SELECT doc1.id_ano,doc1.sinal,doc1.tipo,doc1.modelo,doc1.serie,doc1.subserie,doc1.numero,doc1.periodo,doc1.lancamento,doc1.emissao
+       ,doc1.cfop,
+       doc1.cfopservico,doc1.tppessoa,doc1.atenumero,doc1.datainiserv,doc1.datafimserv,doc1.datasaida,
+       doc1.datadeclaracao,doc1.datanotaconhec,doc1.horasaida,doc1.porcaixa,doc1.petroleo,doc1.notafatura,
+       doc1.cfopdif,doc1.cfopserdif,doc1.cancelado,doc1.orgaopublico,doc1.somaiss,doc1.issoutromunic,
+       doc1.retautomatica,doc1.retemiss,doc1.retemir,doc1.reteminss,doc1.retemcofins,doc1.retemcsll,doc1.retempis,
+       doc1.retorno,doc1.porcontigencia,doc1.versao,doc1.situacao,doc1.situacaosped,doc1.tipocalctrib,
+       doc1.tpligacao,doc1.grupotensao,doc1.crt,doc1.messerv,doc1.anoserv,doc1.tiponfe,doc1.tpoperador,
+       doc1.tpconsignatario,doc1.consumidor,doc1.tiporedespacho,doc1.remas,doc1.rapis,doc1.tipofrete,
+       doc1.tiporecolhimento,doc1.tipotransporte,doc1.volumes,doc1.tipodocexterior,doc1.parcelas,
+       doc1.tipocontab,doc1.mesescredicms,doc1.anoaidf,doc1.anopexpam,doc1.tipoimp,doc1.classe,doc1.tiporeceita,
+       doc1.tipoconsumo,doc1.tiponavegacao,doc1.tipoveiculo,doc1.naturezafrete,doc1.tipotarifaar,doc1.chavene,
+       doc1.chaveneini,doc1.chavene01,doc1.chavene02,doc1.chavene03,doc1.chavene04,doc1.chavenefim,doc1.codigoirrf,
+       doc1.codigopis,doc1.codigocsll,doc1.codigocofins,doc1.numacdraw,doc1.campoligacao,doc1.terminal,doc1.codarea
+       ,doc1.rntrc,doc1.serierps,doc1.rps,doc1.cnae,doc1.codmunic,doc1.codserv,doc1.municdest,doc1.codif,doc1.numerofrete,
+       doc1.marca,doc1.tipovolume,doc1.placa,doc1.placa02,doc1.placa03,doc1.ufplaca,doc1.ufplaca02,doc1.ufplaca03,
+       doc1.doccomexterior,doc1.parcelamento,doc1.renavam,doc1.codigodip,doc1.observacao,doc1.obsestoque,
+       doc1.selofiscal,doc1.aidf,doc1.numeropexpam,doc1.lacre,doc1.unidadecarga,doc1.frota,doc1.veiculo,doc1.viagem,doc1.otm,
+       doc1.frete,doc1.seguro,doc1.basetransp,doc1.iss,doc1.deducaoiss,doc1.inss,doc1.ir,doc1.valoriss,doc1.baseiss,doc1.baseinss,
+       doc1.valorinss,doc1.valorinssadicional,doc1.valorinssnaoretido,doc1.valorinsssubempreitada,
+       doc1.baseir,doc1.valorir,doc1.basecofins,doc1.valorcofins,doc1.basecsll,doc1.valorcsll,doc1.basepis,doc1.valorpis
+       ,doc1.deducaobaseir,doc1.valordeducaoir,doc1.desconto,doc1.mercadorias,doc1.servicos,doc1.valor,
+       doc1.valorliquido,doc1.diferenca,doc1.valordestacado,doc1.baseicms,doc1.icms,doc1.valoricms,doc1.icmsnaocred
+       ,doc1.isentasicms,doc1.outrasicms,doc1.reducaoicms,doc1.reducaoipi,doc1.baseipi,doc1.valoripi,doc1.ipi,
+       doc1.isentasipi,doc1.outras,doc1.basesubst,doc1.substprop,doc1.substterc,doc1.substnaoret,doc1.icmsretido,
+       doc1.pisimp,doc1.cofinsimp,doc1.basepisimp,doc1.basecofinsimp,doc1.valorpisimp,doc1.valorcofinsimp,
+       doc1.consumo,doc1.kwh,doc1.fretemm,doc1.pesotx,doc1.freteliquido,doc1.valorsec_cat,doc1.despacho,doc1.pedagio,
+       doc1.despportuarias,doc1.cargadescarga,doc1.taxaterrestre,doc1.advalorem,doc1.valorgris,
+       doc1.outrosvalores,doc1.pesobruto,doc1.pesoliquido,doc1.cubagem,doc1.anotacoes,doc1.percbaseinss,
+       doc1.percbaseir,doc1.id_itemntr,doc1.id,doc1.id_conhectransp,doc1.id_estabelecimento,doc1.id_orgao,
+       doc1.id_operador,doc1.id_redespachador,doc1.id_emitente,doc1.id_pessoa,doc1.id_consignatario,
+       doc1.id_coleta,doc1.id_entrega,doc1.id_remetente,doc1.id_destinatario,doc1.id_transportadora,
+       doc1.id_motorista,doc1.id_obra,doc1.id_grupodiferenciado,doc1.id_scp,doc1.tipodocumento,
+       doc1.xml_docengine,doc1.xml_transmitido,doc1.tipopedido,doc1.formapagamento,doc1.autorizacaocartao
+       ,doc1.documentocartao,doc1.dataautorizacaocartao,doc1.valoravista,doc1.vezescartao,doc1.anotacao,
+       doc1.id_proposta,doc1.id_grupoempresarial,doc1.id_promocao,doc1.id_posicaoworkflow,
+       doc1.id_midiaorigem,doc1.id_conta,doc1.id_layoutbancario,doc1.id_informacaocartao,doc1.datanegocio
+       ,doc1.aprovadopor,doc1.datahoraaprovacao,doc1.acrescimofinanceiro,doc1.origem,
+       doc1.id_objetoservico,doc1.id_docfis,doc1.id_cfop,doc1.discriminacaoservicos,doc1.statusrps,
+       doc1.tiporps,doc1.tipotributacaoservicorps,doc1.regimeespecialtributacao,
+       doc1.incentivocultural,doc1.ufprestacaoservico,doc1.cidadeprestacaoservico,
+       doc1.id_estabelecimentocontraparte,doc1.descricaopagamento,doc1.datavalidade,doc1.contato,
+       doc1.informacoespedido,doc1.id_oportunidade,doc1.id_parcelamento,doc1.id_docproposta,
+       doc1.xml_cancelamento,doc1.motivo_cancelamento,doc1.data_cancelamento,doc1.datacriacao,
+       doc1.horacriacao,doc1.referenciaexterna,doc1.tipoordemservico,doc1.origemordemservico,
+       doc1.contrato,doc1.processamentocontrato,doc1.id_pedido,doc1.documento_operacao,
+       doc1.documento_operacao_codigo,doc1.xml_titulos,doc1.ordemservico_id,doc1.caixa,doc1.pontodevenda,
+       doc1.id_serie,doc1.dataentradasaida,doc1.tipoemitente,doc1.tiporeceptor,doc1.formadepagamento,
+       doc1.tipooperacao,doc1.uffatogerador,doc1.modocompra,doc1.tipodeemissao,doc1.chave,
+       doc1.observacao_movimentacao,doc1.tabeladepreco,doc1.id_localdeestoqueorigem,
+       doc1.id_localdeestoquedestino,doc1.df_endereco_retirada,doc1.df_endereco_entrega,
+       doc1.municipiofatogerador,doc1.xml_contingencia,doc1.datacontingencia,
+       doc1.justificativacontingencia,doc1.debitoautomatico,doc1.contigencia_justificativa,
+       doc1.contigencia_imprimiu,doc1.contigencia_datahora,doc1.numeroprotocolo,doc1.tipoambiente,
+       doc1.lotecobrancaordemservico_id,doc1.documentorateado,doc1.requisicaoalmoxarifado_id,
+       doc1.gerafinanceiro,doc1.id_conjunto_anexo,doc1.descricaoservicos,doc1.rps_original,
+       doc1.tipo_retencao_iss,doc1.xml_rps,doc1.anotacoes_sistema,doc1.anotacoes_manuais,doc1.uf_embarque
+       ,doc1.local_embarque,doc1.local_despacho,doc1.origemdocumento,doc1.link_nfse,
+       doc1.id_documento_vinculado,doc1.pessoamunicipio,doc1.id_usuario_cadastro,doc1.prazoentrega,
+       doc1.notaimportacao,doc1.chavegold,doc1.wkf_data,doc1.wkf_estado,doc1.usuario_solicitacao_id,
+       doc1.usuario_solicitacao_data,doc1.situacaogerencial,doc1.emailenviado,doc1.totalvalorfaturar
+       ,doc1.id_instancia,doc1.finalidadeemissao,doc1.id_operacao_nfs,doc1.analistacompra,
+       doc1.infopiscompra,doc1.infocofinscompra,doc1.infoicmscompra,doc1.infoicmsstcompra,
+       doc1.infoipicompra,doc1.status,doc1.vendedor,doc1.categoriadeproduto,doc1.uf_habilitacao,
+       doc1.tipo_assinante,doc1.autenticacao_lote_digital,doc1.outras_retencoes,doc1.numero_titulo,
+       doc1.vbcufdest,doc1.pfcpufdest,doc1.picmsufdest,doc1.picmsinter,doc1.picmsinterpart,doc1.vfcpufdest,
+       doc1.vicmsufdest,doc1.vicmsufremet,doc1.dataprevisao_entradasaida,
+       doc1.template_discriminacaorps,doc1.indiedest,doc1.sistema,doc1.tipo_insercao,doc1.reconstruirxml,
+       doc1.indfinal,doc1.iddest,doc1.indpres,doc1.id_pedidoservico,doc1.iddestinoremessa,doc1.lotedigital,
+       doc1.pretituloverificado,doc1.possuiadiantamento,doc1.tabeladefrete,
+       doc1.observacao_dadosgerais,doc1.rascunho,doc1.recalcularimpostos,doc1.nota_antecipada,
+       doc1.id_rateiopadrao,doc1.volumemanual,doc1.status_conferencia,doc1.outrosacrescimos,
+       doc1.titulo_observacao,doc1.projeto_padrao_id,doc1.numeroexterno,doc1.naturezaoperacao,
+       doc1.total_desconto,doc1.id_docfis_contrato,doc1.versao_dfe,doc1.troco,
+       doc1.tipointegracao_pagamento,doc1.reinf_maodeobra,doc1.id_transacaofinanceira,
+       doc1.id_contratofinanceiro,doc1.codigo_verificacao,doc1.rota,doc1.rota_liberado,doc1.id_opeinterna
+       ,doc1.id_moeda,doc1.id_cotacao,doc1.xmlexplodido,doc1.lastupdate,doc1.tenant
+FROM   nsmigration.df_docfis doc1
+LEFT JOIN ns.df_docfis doc2 ON doc1.tipo = doc2.tipo AND doc1.modelo = doc2.modelo AND doc1.serie = doc2.serie AND doc1.subserie = doc2.subserie AND doc1.numero = doc2.numero AND doc1.id_estabelecimento = doc2.id_estabelecimento
+WHERE doc2.id is null;
 
 --ns.df_formapagamentos
 
@@ -843,10 +847,12 @@ INSERT INTO ns.df_formapagamentos
             (id,id_docfis,tipopag,valorpag,cnpjcredoracartao,bandeira,ordem,
              valortroco,
              lastupdate,tenant)
-SELECT id,id_docfis,tipopag,valorpag,cnpjcredoracartao,bandeira,ordem,valortroco
+SELECT for1.id,for1.id_docfis,for1.tipopag,for1.valorpag,for1.cnpjcredoracartao,for1.bandeira,for1.ordem,for1.valortroco
        ,
-       lastupdate,tenant
-FROM   nsmigration.df_formapagamentos;
+       for1.lastupdate,for1.tenant
+FROM   nsmigration.df_formapagamentos for1
+LEFT JOIN ns.df_formapagamentos for2 ON for1.id_docfis = for2.id_docfis
+WHERE for2.id is null;
 
 --ns.df_pagamentos
 
@@ -866,16 +872,18 @@ INSERT INTO ns.df_pagamentos
              pisretido,cofinsretido,csllretido,tipo,isdefault,issretido,
              inssretido,id_documentorateado,id_contratocartao,--tenant,
              percentual,cnpj_operadora,lastupdate)
-SELECT pagamento,id_formapagamento,id_docfis,id_conta,id_rateiopadrao,
-       id_meioeletronico
-       ,id_layoutcobranca,id_operadora,id_bandeira,id_parcelamento,
-       nomeformadepagamento,nomemeioeletronico,nomebandeira,nomeoperadora,
-       nomeconta,valor,numeroparcelas,datafatura,tipooperacao,autorizacaocartao,
-       dataautorizacaocartao,documentocartao,irretido,pisretido,cofinsretido,
-       csllretido,tipo,isdefault,issretido,inssretido,id_documentorateado,
-       id_contratocartao,--tenant,
-       percentual,cnpj_operadora,lastupdate
-FROM   nsmigration.df_pagamentos;
+SELECT pag1.pagamento,pag1.id_formapagamento,pag1.id_docfis,pag1.id_conta,pag1.id_rateiopadrao,
+       pag1.id_meioeletronico
+       ,pag1.id_layoutcobranca,pag1.id_operadora,pag1.id_bandeira,pag1.id_parcelamento,
+       pag1.nomeformadepagamento,pag1.nomemeioeletronico,pag1.nomebandeira,pag1.nomeoperadora,
+       pag1.nomeconta,pag1.valor,pag1.numeroparcelas,pag1.datafatura,pag1.tipooperacao,pag1.autorizacaocartao,
+       pag1.dataautorizacaocartao,pag1.documentocartao,pag1.irretido,pag1.pisretido,pag1.cofinsretido,
+       pag1.csllretido,pag1.tipo,pag1.isdefault,pag1.issretido,pag1.inssretido,pag1.id_documentorateado,
+       pag1.id_contratocartao,--pag1.tenant,
+       pag1.percentual,pag1.cnpj_operadora,pag1.lastupdate
+FROM   nsmigration.df_pagamentos pag1
+LEFT JOIN ns.df_pagamentos pag2 ON pag1.id_formapagamento = pag2.id_formapagamento AND pag1.id_docfis = pag2.id_docfis AND pag1.id_conta = pag2.id_conta
+WHERE pag2.pagamento is null;
 
 --ns.df_parcelas
 
@@ -885,11 +893,13 @@ INSERT INTO ns.df_parcelas
              valorcreditoautilizar,--tenant,
              competencia,basevencimentoparcela,
              percentual,intervalo,sinal,valoresalteradosmanualmente,lastupdate)
-SELECT parcela,id_pagamento,numero,valor,vencimento,sequencial,conta,
-       usarsaldocredito,valorcreditoautilizar,--tenant,
-       competencia,basevencimentoparcela,percentual
-       ,intervalo,sinal,valoresalteradosmanualmente,lastupdate
-FROM   nsmigration.df_parcelas;
+SELECT par1.parcela,par1.id_pagamento,par1.numero,par1.valor,par1.vencimento,par1.sequencial,par1.conta,
+       par1.usarsaldocredito,par1.valorcreditoautilizar,--par1.tenant,
+       par1.competencia,par1.basevencimentoparcela,par1.percentual
+       ,par1.intervalo,par1.sinal,par1.valoresalteradosmanualmente,par1.lastupdate
+FROM   nsmigration.df_parcelas par1
+LEFT JOIN ns.df_parcelas par2 ON par1.parcela = par2.parcela
+WHERE par2.parcela is null;
 
 --financas.titulos
 
@@ -964,86 +974,102 @@ INSERT INTO financas.titulos
              saldoadiantamentosresgatados,id_titulo_origemcomissao,
              datacancelamento,id_tipo_despesa_receita)
              --,origemintegracao,origemintegracaodescricao,tenant)
-SELECT sinal,origem,numero,emissao,vencimento,situacao,parcela,totalparcelas,
-       tppessoa,
-       observacao,valor,valorbruto,irretido,cofinsretido,pisretido,csllretido,
-       inssretido,issretido,desconto,juros,multa,taxabancaria,despesasbancarias,
-       anotacao,id,id_docfis,id_estabelecimento,id_pessoa,id_darf,id_gnre,id_gps
-       ,id_icmsiss,id_outdoc,previsaovencimento,percentualdesconto,
-       datalimitedesconto,percentualmulta,datainiciomulta,percentualjurosdiario,
-       codigocontabil,parcelapedidovenda,nossonumero,linhadigitavel,codigobarras
-       ,conta,previsaoreceber,aliquotapis,aliquotacofins,aliquotacsll,aliquotair
-       ,layoutcobranca,documentorateado,rps,situacaotexto,origemtexto,
-       emissaotexto,vencimentotexto,valorbrutotexto,emissaoanomes,emissaodia,
-       vencimentoanomes,vencimentodia,formapagamento,vezescartao,
-       valortarifacartao,autorizacaocartao,formapagamentotexto,documentocartao,
-       numeroparcelacartao,aliquotaiss,pedidovenda,informacaocartao,
-       valorparcelacartao,previsaopagar,numeronota,tipopagamento,layoutpagamento
-       ,dataagendamento,modelodocumentofiscal,seriedocumentofiscal,
-       subseriedocumentofiscal,tipocontabilizacao,identificadorbancario,
-       finalidadedocbradesco,tipodecontabradesco,id_rps,previsaovencimentotexto,
-       id_pedido,id_fatura,id_servicobanco,id_formapagamentobanco,
-       id_finalidadepagamentobanco,id_tipocontapagamentobanco,id_servicons,
-       id_formapagamentons,id_finalidadepagamentons,id_tipocontapagamentons,
-       id_bempatrimonial,codigodocedenteboleto,numerodocumentoboleto,
-       especieboleto,aceiteboleto,dataprocessamentoboleto,usobancoboleto,
-       carteiraboleto,datacompetenciatributos,codigodareceitatributos,
-       numerodereferenciadarf,outrosacrescimos,percentualoutrosacrescimos,
-       modoexibicaomulta,modoexibicaojuros,modoexibicaooutros,
-       modoexibicaocodigobarras,valorreceitabrutaacumuladadarfsimples,
-       percreceitabrutaacumuladadarfsimples,numerodeclaracaogare,
-       numeroetiquetagare,numerodaparcelagare,codigorenavam,unidadefederacaoipva
-       ,codigomunicipioipva,placaveiculoipva,opcaodepagamentoipva,
-       opcaoretiradacrlv,identificadorfgts,lacreconectividadesocial,
-       numerodocumentodarj,dataprovisoria,valorprovisorio,adiantamento,
-       saldoadiantamento,debitoautomatico,irretidonf,inssretidonf,id_contrato,
-       modoexibicaodesconto,id_dfparcela,id_formapagamento,id_fatura_mercadoria,
-       id_renegociacao_geradora,id_renegociacao_gerada,id_renegociacao_baixa,
-       usadiscriminacao,wkf_estado,wkf_data,valorvariacaocambialativa,
-       valorvariacaocambialpassiva,emprestimo,id_contaemprestimo,
-       id_conjunto_anexo,numerodocumento,datacompetencia,usuarioresponsavel,
-       chavepersona,tipoordempagamento,id_template,id_usuario_cadastro,
-       datahoracriacao,dataautorizacaocartao,id_prestacaodeconta,
-       titulocoberturaconta,coberturaconta,documentorateadocobertura,
-       id_documento_associado,contafornecedor,previsto,pagamento,
-       parcelapagamento,importacao_hash,contabilizado,cfop_codigo,
-       id_titulovinculo_previsao,id_previsao_vinculada,id_proposta,tipocredito,
-       dataregularizacao,creditoidentificado,lancamentocontatc_id,
-       enviadoremessacobranca,contabilizar,contabilizar_baixa,outrasretencoes,
-       descricaooutrasretencoes,lastupdate,razaosocialfactoring,
-       numerodocumentofactoring,razaosocialgps,numerodocumentogps,numeroexterno,
-       id_renegociacaocontrato,estorno,id_titulo_estorno,tipoestorno,
-       pisestornado,cofinsestornado,csllestornado,irestornado,inssestornado,
-       issestornado,vencimentoalteradoregra,notafutura,id_transacaofinanceira,
-       id_contratofinanceiro,id_baixaorigem_dimob,valoraserreembolsado,
-       id_pessoa_reembolso,statusestorno,usamoedaestrangeira,moedaestrangeira,
-       cotacao,valornamoedaestrangeira,dataultimopagamento,mesanocompetenciagps,
-       outrasentidadesgps,saldosemjurosdescontos,saldoadiantamentosresgatados,
-       id_titulo_origemcomissao,datacancelamento,id_tipo_despesa_receita
-       --origemintegracao,origemintegracaodescricao,tenant
-FROM   financasmigration.titulos;
+SELECT tit1.sinal,tit1.origem,tit1.numero,tit1.emissao,tit1.vencimento,tit1.situacao,tit1.parcela,tit1.totalparcelas,
+       tit1.tppessoa,
+       tit1.observacao,tit1.valor,tit1.valorbruto,tit1.irretido,tit1.cofinsretido,tit1.pisretido,tit1.csllretido,
+       tit1.inssretido,tit1.issretido,tit1.desconto,tit1.juros,tit1.multa,tit1.taxabancaria,tit1.despesasbancarias,
+       tit1.anotacao,tit1.id,tit1.id_docfis,tit1.id_estabelecimento,tit1.id_pessoa,tit1.id_darf,tit1.id_gnre,tit1.id_gps
+       ,tit1.id_icmsiss,tit1.id_outdoc,tit1.previsaovencimento,tit1.percentualdesconto,
+       tit1.datalimitedesconto,tit1.percentualmulta,tit1.datainiciomulta,tit1.percentualjurosdiario,
+       tit1.codigocontabil,tit1.parcelapedidovenda,tit1.nossonumero,tit1.linhadigitavel,tit1.codigobarras
+       ,tit1.conta,tit1.previsaoreceber,tit1.aliquotapis,tit1.aliquotacofins,tit1.aliquotacsll,tit1.aliquotair
+       ,tit1.layoutcobranca,tit1.documentorateado,tit1.rps,tit1.situacaotexto,tit1.origemtexto,
+       tit1.emissaotexto,tit1.vencimentotexto,tit1.valorbrutotexto,tit1.emissaoanomes,tit1.emissaodia,
+       tit1.vencimentoanomes,tit1.vencimentodia,tit1.formapagamento,tit1.vezescartao,
+       tit1.valortarifacartao,tit1.autorizacaocartao,tit1.formapagamentotexto,tit1.documentocartao,
+       tit1.numeroparcelacartao,tit1.aliquotaiss,tit1.pedidovenda,tit1.informacaocartao,
+       tit1.valorparcelacartao,tit1.previsaopagar,tit1.numeronota,tit1.tipopagamento,tit1.layoutpagamento
+       ,tit1.dataagendamento,tit1.modelodocumentofiscal,tit1.seriedocumentofiscal,
+       tit1.subseriedocumentofiscal,tit1.tipocontabilizacao,tit1.identificadorbancario,
+       tit1.finalidadedocbradesco,tit1.tipodecontabradesco,tit1.id_rps,tit1.previsaovencimentotexto,
+       tit1.id_pedido,tit1.id_fatura,tit1.id_servicobanco,tit1.id_formapagamentobanco,
+       tit1.id_finalidadepagamentobanco,tit1.id_tipocontapagamentobanco,tit1.id_servicons,
+       tit1.id_formapagamentons,tit1.id_finalidadepagamentons,tit1.id_tipocontapagamentons,
+       tit1.id_bempatrimonial,tit1.codigodocedenteboleto,tit1.numerodocumentoboleto,
+       tit1.especieboleto,tit1.aceiteboleto,tit1.dataprocessamentoboleto,tit1.usobancoboleto,
+       tit1.carteiraboleto,tit1.datacompetenciatributos,tit1.codigodareceitatributos,
+       tit1.numerodereferenciadarf,tit1.outrosacrescimos,tit1.percentualoutrosacrescimos,
+       tit1.modoexibicaomulta,tit1.modoexibicaojuros,tit1.modoexibicaooutros,
+       tit1.modoexibicaocodigobarras,tit1.valorreceitabrutaacumuladadarfsimples,
+       tit1.percreceitabrutaacumuladadarfsimples,tit1.numerodeclaracaogare,
+       tit1.numeroetiquetagare,tit1.numerodaparcelagare,tit1.codigorenavam,tit1.unidadefederacaoipva
+       ,tit1.codigomunicipioipva,tit1.placaveiculoipva,tit1.opcaodepagamentoipva,
+       tit1.opcaoretiradacrlv,tit1.identificadorfgts,tit1.lacreconectividadesocial,
+       tit1.numerodocumentodarj,tit1.dataprovisoria,tit1.valorprovisorio,tit1.adiantamento,
+       tit1.saldoadiantamento,tit1.debitoautomatico,tit1.irretidonf,tit1.inssretidonf,tit1.id_contrato,
+       tit1.modoexibicaodesconto,tit1.id_dfparcela,tit1.id_formapagamento,tit1.id_fatura_mercadoria,
+       tit1.id_renegociacao_geradora,tit1.id_renegociacao_gerada,tit1.id_renegociacao_baixa,
+       tit1.usadiscriminacao,tit1.wkf_estado,tit1.wkf_data,tit1.valorvariacaocambialativa,
+       tit1.valorvariacaocambialpassiva,tit1.emprestimo,tit1.id_contaemprestimo,
+       tit1.id_conjunto_anexo,tit1.numerodocumento,tit1.datacompetencia,tit1.usuarioresponsavel,
+       tit1.chavepersona,tit1.tipoordempagamento,tit1.id_template,tit1.id_usuario_cadastro,
+       tit1.datahoracriacao,tit1.dataautorizacaocartao,tit1.id_prestacaodeconta,
+       tit1.titulocoberturaconta,tit1.coberturaconta,tit1.documentorateadocobertura,
+       tit1.id_documento_associado,tit1.contafornecedor,tit1.previsto,tit1.pagamento,
+       tit1.parcelapagamento,tit1.importacao_hash,tit1.contabilizado,tit1.cfop_codigo,
+       tit1.id_titulovinculo_previsao,tit1.id_previsao_vinculada,tit1.id_proposta,tit1.tipocredito,
+       tit1.dataregularizacao,tit1.creditoidentificado,tit1.lancamentocontatc_id,
+       tit1.enviadoremessacobranca,tit1.contabilizar,tit1.contabilizar_baixa,tit1.outrasretencoes,
+       tit1.descricaooutrasretencoes,tit1.lastupdate,tit1.razaosocialfactoring,
+       tit1.numerodocumentofactoring,tit1.razaosocialgps,tit1.numerodocumentogps,tit1.numeroexterno,
+       tit1.id_renegociacaocontrato,tit1.estorno,tit1.id_titulo_estorno,tit1.tipoestorno,
+       tit1.pisestornado,tit1.cofinsestornado,tit1.csllestornado,tit1.irestornado,tit1.inssestornado,
+       tit1.issestornado,tit1.vencimentoalteradoregra,tit1.notafutura,tit1.id_transacaofinanceira,
+       tit1.id_contratofinanceiro,tit1.id_baixaorigem_dimob,tit1.valoraserreembolsado,
+       tit1.id_pessoa_reembolso,tit1.statusestorno,tit1.usamoedaestrangeira,tit1.moedaestrangeira,
+       tit1.cotacao,tit1.valornamoedaestrangeira,tit1.dataultimopagamento,tit1.mesanocompetenciagps,
+       tit1.outrasentidadesgps,tit1.saldosemjurosdescontos,tit1.saldoadiantamentosresgatados,
+       tit1.id_titulo_origemcomissao,tit1.datacancelamento,tit1.id_tipo_despesa_receita
+       --tit1.origemintegracao,tit1.origemintegracaodescricao,tit1.tenant
+FROM   financasmigration.titulos tit1
+LEFT JOIN financas.titulos tit2 ON tit1.sinal = tit2.sinal AND tit1.origem = tit2.origem AND tit1.numero = tit2.numero AND tit1.id_docfis = tit2.id_docfis AND tit1.id_estabelecimento = tit2.id_estabelecimento AND tit1.id_pessoa = tit2.id_pessoa
+WHERE tit2.id is null;
 
 --servicos.tiposservicos
 
 INSERT INTO servicos.tiposservicos(
             codigo, descricao, versao, tiposervico, id_grupoempresarial, 
             lastupdate, tenant)
-SELECT codigo, descricao, versao, tiposervico, id_grupoempresarial, 
-       lastupdate, tenant
-FROM servicosmigration.tiposservicos;
+SELECT tip1.codigo, tip1.descricao, tip1.versao, tip1.tiposervico, tip1.id_grupoempresarial, 
+       tip1.lastupdate, tip1.tenant
+FROM servicosmigration.tiposservicos tip1
+LEFT JOIN  servicos.tiposservicos tip2 ON tip1.codigo = tip2.codigo
+WHERE tip2.tiposervico is null;
 
 --financas.classificacoesfinanceiras
+
+UPDATE financasmigration.classificacoesfinanceiras cla1 SET paiid = cla3.classificacaofinanceira
+FROM financasmigration.classificacoesfinanceiras cla2, financas.classificacoesfinanceiras cla3
+WHERE cla1.paiid = cla2.classificacaofinanceira
+AND cla2.codigo = cla3.codigo;
+
+UPDATE financasmigration.classificacoesfinanceiras cla1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE cla1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.classificacoesfinanceiras
             (codigo,descricao,codigocontabil,resumo,situacao,versao,natureza,
              classificacaofinanceira,paiid,grupoempresarial,resumoexplicativo,
              lastupdate,importacao_hash,iniciogrupo,apenasagrupador,padrao,
              transferencia,repasse_deducao,tenant,rendimentos)
-SELECT codigo,descricao,codigocontabil,resumo,situacao,versao,natureza,
-       classificacaofinanceira,paiid,grupoempresarial,resumoexplicativo,
-       lastupdate,importacao_hash,iniciogrupo,apenasagrupador,padrao,
-       transferencia,repasse_deducao,tenant,rendimentos
-FROM   financasmigration.classificacoesfinanceiras;
+SELECT cla1.codigo,cla1.descricao,cla1.codigocontabil,cla1.resumo,cla1.situacao,cla1.versao,cla1.natureza,
+       cla1.classificacaofinanceira,cla1.paiid,cla1.grupoempresarial,cla1.resumoexplicativo,
+       cla1.lastupdate,cla1.importacao_hash,cla1.iniciogrupo,cla1.apenasagrupador,cla1.padrao,
+       cla1.transferencia,cla1.repasse_deducao,cla1.tenant,cla1.rendimentos
+FROM   financasmigration.classificacoesfinanceiras cla1
+LEFT JOIN financas.classificacoesfinanceiras cla2 ON cla1.codigo = cla2.codigo
+WHERE cla2.classificacaofinanceira is null;
 
 --servicos.servicos
 
@@ -1063,26 +1089,37 @@ INSERT INTO servicos.servicos(
             visivel, id_grupodeservico, sped_pc, valor_contrato, pode_alterar_valor_contrato_na_proposta, 
             empresacontroller, aquisicao, tipo_item_faturamento, unidade_medida, 
             lastupdate, tenant)
-SELECT servico, descricao, codigosped, atividade, lcp, codserv, nbs, 
-       codigocontabil, contrapartida, centrocusto, cpsrb, incideirrf, 
-       incideinss, tipoiss, regimepc, tributacaopc, bloqueado, tipoatividade, 
-       sped_outro, sped_detalhe, tipo_esocial, valor, unidade, insspercentualincidencia, 
-       descontocobranca, anotacao, incidecomissao, detalhes, aliquotainss, 
-       classificacaofinanceira, id_grupo, cfop, id, vinculado, tiposervico, 
-       tributacaoservico, geracobranca, tipoperiodocobranca, quantidadeperiodocobranca, 
-       visivel, id_grupodeservico, sped_pc, valor_contrato, pode_alterar_valor_contrato_na_proposta, 
-       empresacontroller, aquisicao, tipo_item_faturamento, unidade_medida, 
-       lastupdate, tenant
-FROM servicosmigration.servicos;
+SELECT ser1.servico, ser1.descricao, ser1.codigosped, ser1.atividade, ser1.lcp, ser1.codserv, ser1.nbs, 
+       ser1.codigocontabil, ser1.contrapartida, ser1.centrocusto, ser1.cpsrb, ser1.incideirrf, 
+       ser1.incideinss, ser1.tipoiss, ser1.regimepc, ser1.tributacaopc, ser1.bloqueado, ser1.tipoatividade, 
+       ser1.sped_outro, ser1.sped_detalhe, ser1.tipo_esocial, ser1.valor, ser1.unidade, ser1.insspercentualincidencia, 
+       ser1.descontocobranca, ser1.anotacao, ser1.incidecomissao, ser1.detalhes, ser1.aliquotainss, 
+       ser1.classificacaofinanceira, ser1.id_grupo, ser1.cfop, ser1.id, ser1.vinculado, ser1.tiposervico, 
+       ser1.tributacaoservico, ser1.geracobranca, ser1.tipoperiodocobranca, ser1.quantidadeperiodocobranca, 
+       ser1.visivel, ser1.id_grupodeservico, ser1.sped_pc, ser1.valor_contrato, ser1.pode_alterar_valor_contrato_na_proposta, 
+       ser1.empresacontroller, ser1.aquisicao, ser1.tipo_item_faturamento, ser1.unidade_medida, 
+       ser1.lastupdate, ser1.tenant
+FROM servicosmigration.servicos ser1
+LEFT JOIN servicos.servicos ser2 ON ser1.servico = ser2.servico
+WHERE ser2.id is null;
 
 --financas.motivocancelamentoitemcontrato
 
 INSERT INTO financas.motivocancelamentoitemcontrato
             (id,codigo,descricao,lastupdate,tenant)
-SELECT id,codigo,descricao,lastupdate,tenant
-FROM   financasmigration.motivocancelamentoitemcontrato;
+SELECT mot1.id,mot1.codigo,mot1.descricao,mot1.lastupdate,mot1.tenant
+FROM   financasmigration.motivocancelamentoitemcontrato mot1
+LEFT JOIN financas.motivocancelamentoitemcontrato mot2 ON mot1.codigo = mot2.codigo
+WHERE mot2.id is null;
 
 --financas.itenscontratos
+
+UPDATE financasmigration.itenscontratos ite1 SET contrato = con2.contrato
+FROM financasmigration.contratos con1, financas.contratos con2
+WHERE ite1.contrato = con1.contrato
+AND con1.codigo = con2.codigo
+AND con1.estabelecimento = con2.estabelecimento
+AND con1.participante = con2.participante;
 
 INSERT INTO financas.itenscontratos
             (itemcontrato,contrato,servico,codigo,observacao,valor,rateio,
@@ -1105,26 +1142,28 @@ INSERT INTO financas.itenscontratos
              numerodiasparavencimento,previsaovencimento,situacaofaturamento,
              origemnaorecorrente,tipocancelamento,motivocancelamento,
              usarindicevariavel,evento,lastupdate,tenant)
-SELECT itemcontrato,contrato,servico,codigo,observacao,valor,rateio,processado,
-       cancelado,datahoracancelamento,quantidade,objetoservicoitem,
-       descontosnopedido,unidadenatureza,unidadeintervalonatureza,
-       quantidadeintervalonatureza,tipovencimento,diavencimento,
-       adicaomesesvencimento,qtddiasparainicio,qtddiasparafim,
-       qtdmesesparareajuste,percentualdesconto,percentualmulta,
-       percentualjurosdiarios,tipocobranca,ultimadataprocessamento,
-       ultimadataprocessamentotemp,recorrente,indice,dataproximoreajuste,
-       diaultimadataprocessamento,considerardatainicio,recorrenciapropria,
-       parcelainicial,parcelafinal,parcelaatual,possuicomissao,retemimposto,
-       tipovalor,objetoservico_id,processaperiodoanterior,dataproximaprevisao,
-       dataproximaprevisaosugerida,tipoemissao,qtddiasemissaotitulo,
-       usadiscriminacao,qtdtitulosagerar,qtdtitulosgerados,diaparafaturamento,
-       id_item_faturamento,codigoitem,grupofaturamento,reajusteautomatico,
-       tiposuspensao,tipocomissao,itemcontratoorigem,transferido,datafaturamento
-       ,numerodiasparavencimento,previsaovencimento,situacaofaturamento,
-       origemnaorecorrente,tipocancelamento,motivocancelamento,
-       usarindicevariavel,evento,lastupdate,tenant
-FROM   financasmigration.itenscontratos;
-
+SELECT ite1.itemcontrato,ite1.contrato,ite1.servico,ite1.codigo,ite1.observacao,ite1.valor,ite1.rateio,ite1.processado,
+       ite1.cancelado,ite1.datahoracancelamento,ite1.quantidade,ite1.objetoservicoitem,
+       ite1.descontosnopedido,ite1.unidadenatureza,ite1.unidadeintervalonatureza,
+       ite1.quantidadeintervalonatureza,ite1.tipovencimento,ite1.diavencimento,
+       ite1.adicaomesesvencimento,ite1.qtddiasparainicio,ite1.qtddiasparafim,
+       ite1.qtdmesesparareajuste,ite1.percentualdesconto,ite1.percentualmulta,
+       ite1.percentualjurosdiarios,ite1.tipocobranca,ite1.ultimadataprocessamento,
+       ite1.ultimadataprocessamentotemp,ite1.recorrente,ite1.indice,ite1.dataproximoreajuste,
+       ite1.diaultimadataprocessamento,ite1.considerardatainicio,ite1.recorrenciapropria,
+       ite1.parcelainicial,ite1.parcelafinal,ite1.parcelaatual,ite1.possuicomissao,ite1.retemimposto,
+       ite1.tipovalor,ite1.objetoservico_id,ite1.processaperiodoanterior,ite1.dataproximaprevisao,
+       ite1.dataproximaprevisaosugerida,ite1.tipoemissao,ite1.qtddiasemissaotitulo,
+       ite1.usadiscriminacao,ite1.qtdtitulosagerar,ite1.qtdtitulosgerados,ite1.diaparafaturamento,
+       ite1.id_item_faturamento,ite1.codigoitem,ite1.grupofaturamento,ite1.reajusteautomatico,
+       ite1.tiposuspensao,ite1.tipocomissao,ite1.itemcontratoorigem,ite1.transferido,ite1.datafaturamento
+       ,ite1.numerodiasparavencimento,ite1.previsaovencimento,ite1.situacaofaturamento,
+       ite1.origemnaorecorrente,ite1.tipocancelamento,ite1.motivocancelamento,
+       ite1.usarindicevariavel,ite1.evento,ite1.lastupdate,ite1.tenant
+FROM   financasmigration.itenscontratos ite1
+LEFT JOIN financas.itenscontratos ite2 ON ite1.contrato = ite2.contrato AND ite1.servico = ite2.servico AND ite1.codigo = ite2.codigo AND ite1.valor = ite2.valor AND ite1.quantidade = ite2.quantidade AND ite1.unidadenatureza = ite2.unidadenatureza AND ite1.unidadeintervalonatureza = ite2.unidadeintervalonatureza AND ite1.quantidadeintervalonatureza = ite2.quantidadeintervalonatureza AND ite1.tipovencimento = ite2.tipovencimento AND ite1.diavencimento = ite2.diavencimento AND ite1.tipocobranca = ite2.tipocobranca
+WHERE ite2.itemcontrato is null;
+ 
 --ns.df_servicos
 
 INSERT INTO ns.df_servicos
@@ -1144,22 +1183,24 @@ INSERT INTO ns.df_servicos
              aliquota_iss,aliquota_inss,aliquota_ir,aliquota_pis,aliquota_cofins
              ,aliquota_csll,percentual_incidencia_inss,reducao_base_iss,
              unitario_variavel,lastupdate,tenant)
-SELECT id_ano,cfop,descricao,incideirrf,incideinss,tipo,rapis,remas,deducao,
-       unitario,
-       quantidade,valordesc,valor,vlrservicos15,vlrservicos20,vlrservicos25,
-       valorinssadicional,valorinssnaoretido,ordem,id_docfis,id_notadeducao,id,
-       id_obra,id_servico,vencimento,inicioreferencia,fimreferencia,
-       diasvencimento,titulo,itemcontrato,pessoa,contrato,processamentocontrato,
-       tipocobranca,parcela,totalparcelas,objetoservico_id,tiposervico,base_iss,
-       valor_iss,base_inss,valor_inss,base_irrf,valor_irrf,base_cofins,
-       valor_cofins,base_pis,valor_pis,base_csll,valor_csll,retem_iss,retem_inss
-       ,retem_irrf,retem_cofins,retem_pis,retem_csll,emissao,valorcontabilpis,
-       valorcontabilcofins,id_origem,desconto,datareajusteitemcontrato,
-       valortotalocorrenciasitemcontrato,valordebitopis,valordebitocofins,
-       aliquota_iss,aliquota_inss,aliquota_ir,aliquota_pis,aliquota_cofins,
-       aliquota_csll,percentual_incidencia_inss,reducao_base_iss,
-       unitario_variavel,lastupdate,tenant
-FROM   nsmigration.df_servicos;
+SELECT dfs1.id_ano,dfs1.cfop,dfs1.descricao,dfs1.incideirrf,dfs1.incideinss,dfs1.tipo,dfs1.rapis,dfs1.remas,dfs1.deducao,
+       dfs1.unitario,
+       dfs1.quantidade,dfs1.valordesc,dfs1.valor,dfs1.vlrservicos15,dfs1.vlrservicos20,dfs1.vlrservicos25,
+       dfs1.valorinssadicional,dfs1.valorinssnaoretido,dfs1.ordem,dfs1.id_docfis,dfs1.id_notadeducao,dfs1.id,
+       dfs1.id_obra,dfs1.id_servico,dfs1.vencimento,dfs1.inicioreferencia,dfs1.fimreferencia,
+       dfs1.diasvencimento,dfs1.titulo,dfs1.itemcontrato,dfs1.pessoa,dfs1.contrato,dfs1.processamentocontrato,
+       dfs1.tipocobranca,dfs1.parcela,dfs1.totalparcelas,dfs1.objetoservico_id,dfs1.tiposervico,dfs1.base_iss,
+       dfs1.valor_iss,dfs1.base_inss,dfs1.valor_inss,dfs1.base_irrf,dfs1.valor_irrf,dfs1.base_cofins,
+       dfs1.valor_cofins,dfs1.base_pis,dfs1.valor_pis,dfs1.base_csll,dfs1.valor_csll,dfs1.retem_iss,dfs1.retem_inss
+       ,dfs1.retem_irrf,dfs1.retem_cofins,dfs1.retem_pis,dfs1.retem_csll,dfs1.emissao,dfs1.valorcontabilpis,
+       dfs1.valorcontabilcofins,dfs1.id_origem,dfs1.desconto,dfs1.datareajusteitemcontrato,
+       dfs1.valortotalocorrenciasitemcontrato,dfs1.valordebitopis,dfs1.valordebitocofins,
+       dfs1.aliquota_iss,dfs1.aliquota_inss,dfs1.aliquota_ir,dfs1.aliquota_pis,dfs1.aliquota_cofins,
+       dfs1.aliquota_csll,dfs1.percentual_incidencia_inss,dfs1.reducao_base_iss,
+       dfs1.unitario_variavel,dfs1.lastupdate,dfs1.tenant
+FROM   nsmigration.df_servicos dfs1
+LEFT JOIN ns.df_servicos dfs2 ON dfs1.id_servico = dfs2.id_servico AND dfs1.id_docfis = dfs2.id_docfis AND dfs1.valor = dfs2.valor AND dfs1.quantidade = dfs2.quantidade AND dfs1.inicioreferencia = dfs2.inicioreferencia AND dfs1.pessoa = dfs2.pessoa AND dfs1.contrato = dfs2.contrato
+WHERE dfs2.id is null;
 
 --ns.df_vendedores
 
@@ -1167,10 +1208,12 @@ INSERT INTO ns.df_vendedores
             (df_vendedor,id_docfis,vendedor,percentual,padrao,
              percentual_comissao,lastupdate,
              tenant)
-SELECT df_vendedor,id_docfis,vendedor,percentual,padrao,percentual_comissao,
-       lastupdate,
-       tenant
-FROM   nsmigration.df_vendedores;
+SELECT dfv1.df_vendedor,dfv1.id_docfis,dfv1.vendedor,dfv1.percentual,dfv1.padrao,dfv1.percentual_comissao,
+       dfv1.lastupdate,
+       dfv1.tenant
+FROM   nsmigration.df_vendedores dfv1
+LEFT JOIN ns.df_vendedores dfv2 ON dfv1.df_vendedor = dfv2.df_vendedor
+WHERE dfv2.df_vendedor is null;
 
 --ns.empresasacessosusuarios
 
@@ -1238,10 +1281,19 @@ FROM   nsmigration.estabelecimentoscfops;
 
 INSERT INTO ns.conjuntos
             (conjunto,descricao,cadastro,codigo,lastupdate,tenant)
-SELECT conjunto,descricao,cadastro,codigo,lastupdate,tenant
-FROM   nsmigration.conjuntos;
+SELECT con1.conjunto,con1.descricao,con1.cadastro,con1.codigo,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntos con1
+LEFT JOIN ns.conjuntos con2 ON con1.codigo = con2.codigo AND con1.descricao = con2.descricao
+WHERE con2.conjunto is null;
 
 --ns.estabelecimentosconjuntos
+
+UPDATE nsmigration.estabelecimentosconjuntos est1 SET estabelecimento = est3.estabelecimento
+FROM nsmigration.estabelecimentos est2, ns.estabelecimentos est3
+WHERE est1.estabelecimento = est2.estabelecimento
+AND est2.raizcnpj = est3.raizcnpj
+AND est2.ordemcnpj = est3.ordemcnpj
+AND est2.cpf = est3.cpf;
 
 INSERT INTO ns.estabelecimentosconjuntos
             (estabelecimentoconjunto,estabelecimento,conjunto,cadastro,permissao
@@ -2990,7 +3042,7 @@ SELECT lay1.nome,lay1.implementacao,lay1.versao,lay1.layoutcobrancacartao,lay1.m
        lay1.tenant
 FROM   financasmigration.layoutscobrancascartoes lay1
 LEFT JOIN financas.layoutscobrancascartoes lay2 ON lay1.nome = lay2.nome
-WHERE çay2.layoutcobrancacartao;
+WHERE lay2.layoutcobrancacartao is null;
 
 
 --financas.layoutscustodiacheques
@@ -3052,8 +3104,10 @@ FROM   financasmigration.lotesfaturas;
 
 INSERT INTO financas.meioseletronicoscartoes
             (codigo,versao,meioeletronicocartao,lastupdate,tenant)
-SELECT codigo,versao,meioeletronicocartao,lastupdate,tenant
-FROM   financasmigration.meioseletronicoscartoes;
+SELECT mei1.codigo,mei1.versao,mei1.meioeletronicocartao,mei1.lastupdate,mei1.tenant
+FROM   financasmigration.meioseletronicoscartoes mei1
+LEFT JOIN financas.meioseletronicoscartoes mei2 ON mei1.codigo = mei2.codigo
+WHERE mei2.meioeletronicocartao is null;
 
 --financas.mensagenslotesfaturas
 
@@ -3135,10 +3189,12 @@ INSERT INTO financas.ocorrenciasbancariasrejeicoes
             (ocorrenciabancariarejeicao,implementacaolayout,codigo,descricao,
              lastupdate,
              tenant)
-SELECT ocorrenciabancariarejeicao,implementacaolayout,codigo,descricao,
-       lastupdate,
-       tenant
-FROM   financasmigration.ocorrenciasbancariasrejeicoes;
+SELECT oco1.ocorrenciabancariarejeicao,oco1.implementacaolayout,oco1.codigo,oco1.descricao,
+       oco1.lastupdate,
+       oco1.tenant
+FROM   financasmigration.ocorrenciasbancariasrejeicoes oco1
+LEFT JOIN financas.ocorrenciasbancariasrejeicoes oco2 ON oco1.implementacaolayout = oco2.implementacaolayout AND oco1.codigo = oco2.codigo AND oco1.descricao = oco2.descricao
+WHERE oco2.ocorrenciabancariarejeicao is null;
 
 --financas.ocorrenciascontratos
 
@@ -3165,15 +3221,19 @@ FROM   financasmigration.operacaoirregularidade;
 
 INSERT INTO financas.operacoescartoes
             (operacaocartao,descricao,lastupdate,tenant)
-SELECT operacaocartao,descricao,lastupdate,tenant
-FROM   financasmigration.operacoescartoes;
+SELECT ope1.operacaocartao,ope1.descricao,ope1.lastupdate,ope1.tenant
+FROM   financasmigration.operacoescartoes ope1
+LEFT JOIN financas.operacoescartoes ope2 ON ope1.descricao = ope2.descricao
+WHERE ope2.operacaocartao is null;
 
 --financas.operadorascartoes
 
 INSERT INTO financas.operadorascartoes
             (codigo,versao,operadoracartao,lastupdate,tenant)
-SELECT codigo,versao,operadoracartao,lastupdate,tenant
-FROM   financasmigration.operadorascartoes;
+SELECT ope1.codigo,ope1.versao,ope1.operadoracartao,ope1.lastupdate,ope1.tenant
+FROM   financasmigration.operadorascartoes ope1
+LEFT JOIN financas.operadorascartoes ope2 ON ope1.codigo = ope2.codigo AND ope1.versao = ope2.versao
+WHERE ope2.operadoracartao is null;
 
 --financas.periodos
 
@@ -3238,17 +3298,25 @@ FROM   financasmigration.previsoesreceber;
 
 --financas.projetosclientes
 
+UPDATE financasmigration.projetosclientes pro1 SET id_projeto = pro3.projeto
+FROM financasmigration.projetos pro2, financas.projetos pro3
+WHERE pro1.id_projeto = pro2.projeto
+AND pro2.codigo = pro3.codigo
+AND pro2.estabelecimento_id = pro3.estabelecimento_id 
+AND pro2.cliente_id = pro3.cliente_id;
+
+UPDATE financasmigration.projetosclientes pro1 SET cliente_id = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE pro1.cliente_id = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
+
 INSERT INTO financas.projetosclientes
             (projetocliente,id_projeto,cliente_id,lastupdate,tenant)
-SELECT projetocliente,id_projeto,cliente_id,lastupdate,tenant
-FROM   financasmigration.projetosclientes;
-
---financas.projetosclientes
-
-INSERT INTO financas.projetosclientes
-            (projetocliente,id_projeto,cliente_id,lastupdate,tenant)
-SELECT projetocliente,id_projeto,cliente_id,lastupdate,tenant
-FROM   financasmigration.projetosclientes;
+SELECT pro1.projetocliente,pro1.id_projeto,pro1.cliente_id,pro1.lastupdate,pro1.tenant
+FROM   financasmigration.projetosclientes pro1
+LEFT JOIN financas.projetosclientes pro2 ON pro1.id_projeto = pro2.id_projeto AND pro1.cliente_id = pro2.cliente_id
+WHERE pro2.projetocliente is null;
 
 --financas.projetosgestores
 
@@ -3333,6 +3401,7 @@ FROM   financasmigration.reembolsospessoas;
 
 --financas.reembolsospessoasitens
 
+
 INSERT INTO financas.reembolsospessoasitens
             (reembolsopessoaitem,reembolsopessoa,titulo,lastupdate,tenant)
 SELECT reembolsopessoaitem,reembolsopessoa,titulo,lastupdate,tenant
@@ -3372,10 +3441,10 @@ FROM   financasmigration.reguascobrancasetapascontrole;
 --financas.relatoriosgruposclassificadores
 
 INSERT INTO financas.relatoriosgruposclassificadores
-            (relatoriogrupoclassificador,grupoempresarial,nome,tipodinamico,
+            (relatoriogrupoclassificador,grupoempresarial,nome,--tipodinamico,
              lastupdate,tenant)
-SELECT relatoriogrupoclassificador,grupoempresarial,nome,tipodinamico,lastupdate
-       ,tenant
+SELECT relatoriogrupoclassificador,grupoempresarial,nome,--tipodinamico,
+       lastupdate,tenant
 FROM   financasmigration.relatoriosgruposclassificadores;
 
 --financas.rendimentosdiariosaplicacoes
@@ -3471,10 +3540,18 @@ FROM   financasmigration.sequencialcarteira;
 
 --financas.servicosbancos
 
+UPDATE financasmigration.servicosbancosservicosns ser1 SET id_servicobanco = ser3.id
+FROM financasmigration.servicosbancos ser2, financas.servicosbancos ser3
+WHERE ser1.id_servicobanco = ser2.id
+AND ser3.id_banco = ser2.id_banco 
+AND ser3.codigo = ser2.codigo;
+
 INSERT INTO financas.servicosbancosservicosns
             (id_servicons,id_servicobanco,lastupdate,tenant)
-SELECT id_servicons,id_servicobanco,lastupdate,tenant
-FROM   financasmigration.servicosbancosservicosns;
+SELECT ser1.id_servicons,ser1.id_servicobanco,ser1.lastupdate,ser1.tenant
+FROM   financasmigration.servicosbancosservicosns ser1
+LEFT JOIN financas.servicosbancosservicosns ser2 ON ser1.id_servicons = ser2.id_servicons AND ser1.id_servicobanco = ser2.id_servicobanco
+WHERE ser2.id_servicons is null;
 
 --financas.servicosns
 
@@ -3760,85 +3837,183 @@ FROM   financasmigration.vinculosgruposempresariais;
 
 --ns.conjuntosclassificacoesparticipantes
 
+UPDATE nsmigration.conjuntosclassificacoesparticipantes con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosclassificacoesparticipantes
             (conjuntoclassificacaoparticipante,registro,conjunto,lastupdate,
              tenant)
-SELECT conjuntoclassificacaoparticipante,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosclassificacoesparticipantes;
+SELECT con1.conjuntoclassificacaoparticipante,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosclassificacoesparticipantes con1
+LEFT JOIN ns.conjuntosclassificacoesparticipantes con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntoclassificacaoparticipante is null;
+
 
 --ns.conjuntosclientes
 
+UPDATE nsmigration.conjuntosclientes con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosclientes
             (conjuntocliente,registro,conjunto,lastupdate,tenant)
-SELECT conjuntocliente,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosclientes;
+SELECT con1.conjuntocliente,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosclientes con1
+LEFT JOIN ns.conjuntosclientes con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntocliente is null;
 
 --ns.conjuntosfichas
 
+UPDATE nsmigration.conjuntosfichas con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosfichas
             (conjuntoficha,registro,conjunto,lastupdate,tenant)
-SELECT conjuntoficha,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosfichas;
+SELECT con1.conjuntoficha,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosfichas con1
+LEFT JOIN ns.conjuntosfichas con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntoficha is null;
+
 
 --ns.conjuntosfornecedores
 
+UPDATE nsmigration.conjuntosfornecedores con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosfornecedores
             (conjuntofornecedor,registro,conjunto,lastupdate,tenant)
-SELECT conjuntofornecedor,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosfornecedores;
+SELECT con1.conjuntofornecedor,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosfornecedores con1
+LEFT JOIN ns.conjuntosfornecedores con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntofornecedor is null;
 
 --ns.conjuntosmodeloscontratos
 
+UPDATE nsmigration.conjuntosmodeloscontratos con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosmodeloscontratos
             (conjuntomodelocontrato,registro,conjunto,lastupdate,tenant)
-SELECT conjuntomodelocontrato,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosmodeloscontratos;
+SELECT con1.conjuntomodelocontrato,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosmodeloscontratos con1
+LEFT JOIN ns.conjuntosmodeloscontratos con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntomodelocontrato is null;
 
 --ns.conjuntosrepresentantescomerciais
 
+UPDATE nsmigration.conjuntosrepresentantescomerciais con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosrepresentantescomerciais
             (conjuntorepresentantecomercial,registro,conjunto,lastupdate,tenant)
-SELECT conjuntorepresentantecomercial,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosrepresentantescomerciais;
+SELECT con1.conjuntorepresentantecomercial,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosrepresentantescomerciais con1
+LEFT JOIN ns.conjuntosrepresentantescomerciais con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntorepresentantecomercial is null;
 
 --ns.conjuntosrepresentantestecnicos
 
+UPDATE nsmigration.conjuntosrepresentantestecnicos con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosrepresentantestecnicos
             (conjuntorepresentantetecnico,registro,conjunto,lastupdate,tenant)
-SELECT conjuntorepresentantetecnico,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosrepresentantestecnicos;
+SELECT con1.conjuntorepresentantetecnico,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosrepresentantestecnicos con1
+LEFT JOIN ns.conjuntosrepresentantestecnicos con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntorepresentantetecnico is null;
 
 --ns.conjuntosservicos
 
+UPDATE nsmigration.conjuntosservicos con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosservicos
             (conjuntoservico,registro,conjunto,lastupdate,tenant)
-SELECT conjuntoservico,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosservicos;
+SELECT con1.conjuntoservico,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosservicos con1
+LEFT JOIN ns.conjuntosservicos con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntoservico is null;
 
 --ns.conjuntosservicosdecatalogos
 
+UPDATE nsmigration.conjuntosservicosdecatalogos con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosservicosdecatalogos
             (conjuntoservicodecatalogo,registro,conjunto,lastupdate,tenant)
-SELECT conjuntoservicodecatalogo,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosservicosdecatalogos;
+SELECT con1.conjuntoservicodecatalogo,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosservicosdecatalogos con1
+LEFT JOIN ns.conjuntosservicosdecatalogos con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntoservicodecatalogo is null;
 
 --ns.conjuntostecnicos
 
+UPDATE nsmigration.conjuntostecnicos con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntostecnicos
             (conjuntotecnico,registro,conjunto,lastupdate,tenant)
-SELECT conjuntotecnico,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntostecnicos;
+SELECT con1.conjuntotecnico,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntostecnicos con1
+LEFT JOIN ns.conjuntostecnicos con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntotecnico is null;
 
 --ns.conjuntostransportadoras
 
+UPDATE nsmigration.conjuntostransportadoras con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntostransportadoras
             (conjuntotransportador,registro,conjunto,lastupdate,tenant)
-SELECT conjuntotransportador,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntostransportadoras;
+SELECT con1.conjuntotransportador,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntostransportadoras con1
+LEFT JOIN ns.conjuntostransportadoras con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntotransportador is null;
 
 --ns.conjuntosvendedores
 
+UPDATE nsmigration.conjuntosvendedores con1 SET conjunto = con3.conjunto
+FROM nsmigration.conjuntos con2, ns.conjuntos con3
+WHERE con1.conjunto = con2.conjunto
+AND con2.codigo = con3.codigo
+AND con2.descricao = con3.descricao;
+
 INSERT INTO ns.conjuntosvendedores
             (conjuntovendedor,registro,conjunto,lastupdate,tenant)
-SELECT conjuntovendedor,registro,conjunto,lastupdate,tenant
-FROM   nsmigration.conjuntosvendedores;
+SELECT con1.conjuntovendedor,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
+FROM   nsmigration.conjuntosvendedores con1
+LEFT JOIN ns.conjuntosvendedores con2 ON con1.registro = con2.registro AND con1.conjunto = con2.conjunto
+WHERE con2.conjuntovendedor is null;
