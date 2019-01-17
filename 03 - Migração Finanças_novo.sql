@@ -2860,12 +2860,14 @@ INSERT INTO financas.alteracoescontratos
              tiposuspensaoanterior,tipovencimentoatual,diavencimentoatual,
              adicaomesesvencimentoatual,tipovencimentonovo,diavencimentonovo,
              adicaomesesvencimentonovo,tenant)
-SELECT alteracaocontrato,tipo,origem,status,dataprincipal,dataauxiliar,
-       itemcontrato,
-       itemnotacobranca,contrato,usuario,lastupdate,valor,tiposuspensaoanterior,
-       tipovencimentoatual,diavencimentoatual,adicaomesesvencimentoatual,
-       tipovencimentonovo,diavencimentonovo,adicaomesesvencimentonovo,tenant
-FROM   financasmigration.alteracoescontratos;
+SELECT alt1.alteracaocontrato,alt1.tipo,alt1.origem,alt1.status,alt1.dataprincipal,alt1.dataauxiliar,
+       alt1.itemcontrato,
+       alt1.itemnotacobranca,alt1.contrato,alt1.usuario,alt1.lastupdate,alt1.valor,alt1.tiposuspensaoanterior,
+       alt1.tipovencimentoatual,alt1.diavencimentoatual,alt1.adicaomesesvencimentoatual,
+       alt1.tipovencimentonovo,alt1.diavencimentonovo,alt1.adicaomesesvencimentonovo,alt1.tenant
+FROM   financasmigration.alteracoescontratos alt1
+LEFT JOIN financas.alteracoescontratos alt2 ON alt1.tipo = alt2.tipo
+WHERE alt2.alteracaocontrato is null;
 
 --financas.acoescontratos
 
@@ -3075,9 +3077,11 @@ FROM   financasmigration.layoutsimpressorascheques;
 INSERT INTO financas.layoutspagamentos
             (descricao,tipolayoutpagamento,versao,banco,layoutpagamento,
              lastupdate,tenant)
-SELECT descricao,tipolayoutpagamento,versao,banco,layoutpagamento,lastupdate,
-       tenant
-FROM   financasmigration.layoutspagamentos;
+SELECT lay1.descricao,lay1.tipolayoutpagamento,lay1.versao,lay1.banco,lay1.layoutpagamento,lay1.lastupdate,
+       lay1.tenant
+FROM   financasmigration.layoutspagamentos lay1
+LEFt JOIN financas.layoutspagamentos lay2 ON lay1.descricao = lay2.descricao AND lay1.tipolayoutpagamento = lay2.tipolayoutpagamento AND lay1.banco = lay2.banco
+WHERE lay2.layoutpagamento is null;
 
 --financas.locaislancamentosexternos
 
@@ -3601,27 +3605,38 @@ FROM   financasmigration.tipos_despesas_receitas;
 
 --financas.tiposcontaspagamentosbancos
 
+UPDATE financasmigration.tiposcontaspagamentosbancos fin1 SET id_banco = ban2.banco
+FROM financasmigration.bancos ban1, financas.bancos ban2
+WHERE ban1.banco = fin1.id_banco
+AND ban1.numero = ban2.numero;
+
 INSERT INTO financas.tiposcontaspagamentosbancos
             (id,id_banco,codigo,descricao,disponivel,id_tipocontapagamentons,
              tipolayoutpagamento,lastupdate,tenant)
-SELECT id,id_banco,codigo,descricao,disponivel,id_tipocontapagamentons,
-       tipolayoutpagamento,lastupdate,tenant
-FROM   financasmigration.tiposcontaspagamentosbancos;
+SELECT tip1.id,tip1.id_banco,tip1.codigo,tip1.descricao,tip1.disponivel,tip1.id_tipocontapagamentons,
+       tip1.tipolayoutpagamento,tip1.lastupdate,tip1.tenant
+FROM   financasmigration.tiposcontaspagamentosbancos tip1
+LEFT JOIN financas.tiposcontaspagamentosbancos tip2 ON tip1.id_banco = tip2.id_banco AND tip1.codigo = tip2.codigo
+WHERE tip2.id is null;
 
 --financas.tiposcontaspagamentosbancosformaspagbanco
 
 INSERT INTO financas.tiposcontaspagamentosbancosformaspagbanco
             (id_formapagamentobanco,id_tipocontapagamentobanco,lastupdate,tenant
 )
-SELECT id_formapagamentobanco,id_tipocontapagamentobanco,lastupdate,tenant
-FROM   financasmigration.tiposcontaspagamentosbancosformaspagbanco;
+SELECT tip1.id_formapagamentobanco,tip1.id_tipocontapagamentobanco,tip1.lastupdate,tip1.tenant
+FROM   financasmigration.tiposcontaspagamentosbancosformaspagbanco tip1
+LEFT JOIN financas.tiposcontaspagamentosbancosformaspagbanco tip2 ON tip1.id_formapagamentobanco = tip2.id_formapagamentobanco AND tip1.id_tipocontapagamentobanco = tip2.id_tipocontapagamentobanco
+WHERE tip2.id_formapagamentobanco is null;
 
 --financas.tiposcontaspagamentosns
 
 INSERT INTO financas.tiposcontaspagamentosns
             (id,codigo,descricao,disponivel,lastupdate,tenant)
-SELECT id,codigo,descricao,disponivel,lastupdate,tenant
-FROM   financasmigration.tiposcontaspagamentosns;
+SELECT tip1.id,tip1.codigo,tip1.descricao,tip1.disponivel,tip1.lastupdate,tip1.tenant
+FROM   financasmigration.tiposcontaspagamentosns tip1
+LEFT JOIN financas.tiposcontaspagamentosns tip2 ON tip1.codigo = tip2.codigo
+WHERE tip2.id is null;
 
 --financas.tituloscancelados
 
@@ -3674,7 +3689,7 @@ INSERT INTO financas.tituloscancelados
              coberturaconta,documentorateadocobertura,id_documento_associado,
              contafornecedor,previsto,pagamento,parcelapagamento,contabilizado,
              importacao_hash,cfop_codigo,id_titulovinculo_previsao,
-             id_previsao_vinculada,id_cfop,id_proposta,tipocredito,
+             id_previsao_vinculada,id_proposta,tipocredito,--id_cfop,
              dataregularizacao,creditoidentificado,lancamentocontatc_id,
              enviadoremessacobranca,contabilizar,contabilizar_baixa,
              outrasretencoes,descricaooutrasretencoes,razaosocialfactoring,
@@ -3688,7 +3703,7 @@ INSERT INTO financas.tituloscancelados
              valornamoedaestrangeira,dataultimopagamento,saldosemjurosdescontos,
              saldoadiantamentosresgatados,mesanocompetenciagps,
              outrasentidadesgps,id_titulo_origemcomissao,datacancelamento,
-             id_tipo_despesa_receita,origemintegracao,origemintegracaodescricao,
+             id_tipo_despesa_receita,--origemintegracao,origemintegracaodescricao,
              lastupdate,tenant)
 SELECT sinal,origem,numero,emissao,vencimento,situacao,parcela,totalparcelas,
        tppessoa,
@@ -3733,7 +3748,7 @@ SELECT sinal,origem,numero,emissao,vencimento,situacao,parcela,totalparcelas,
        titulocoberturaconta,coberturaconta,documentorateadocobertura,
        id_documento_associado,contafornecedor,previsto,pagamento,
        parcelapagamento,contabilizado,importacao_hash,cfop_codigo,
-       id_titulovinculo_previsao,id_previsao_vinculada,id_cfop,id_proposta,
+       id_titulovinculo_previsao,id_previsao_vinculada,id_proposta,--id_cfop,
        tipocredito,dataregularizacao,creditoidentificado,lancamentocontatc_id,
        enviadoremessacobranca,contabilizar,contabilizar_baixa,outrasretencoes,
        descricaooutrasretencoes,razaosocialfactoring,numerodocumentofactoring,
@@ -3746,7 +3761,7 @@ SELECT sinal,origem,numero,emissao,vencimento,situacao,parcela,totalparcelas,
        cotacao,valornamoedaestrangeira,dataultimopagamento,
        saldosemjurosdescontos,saldoadiantamentosresgatados,mesanocompetenciagps,
        outrasentidadesgps,id_titulo_origemcomissao,datacancelamento,
-       id_tipo_despesa_receita,origemintegracao,origemintegracaodescricao,
+       id_tipo_despesa_receita,--origemintegracao,origemintegracaodescricao,
        lastupdate,tenant
 FROM   financasmigration.tituloscancelados;
 
