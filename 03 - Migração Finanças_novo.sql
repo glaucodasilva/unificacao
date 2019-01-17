@@ -2521,6 +2521,15 @@ FROM   financasmigration.formaspagamentosns for1
 LEFT JOIN financas.formaspagamentosns for2 ON for1.codigo = for2.codigo
 WHERE for2.id is null;
 
+--financas.servicosns
+
+INSERT INTO financas.servicosns
+            (id,codigo,descricao,disponivel,lastupdate,tenant)
+SELECT serv1.id,serv1.codigo,serv1.descricao,serv1.disponivel,serv1.lastupdate,serv1.tenant
+FROM   financasmigration.servicosns serv1
+LEFT JOIN financas.servicosns serv2 ON serv1.codigo = serv2.codigo AND serv1.descricao = serv2.descricao
+WHERE serv2.id is null;
+
 --financas.formaspagamentosnsservicosns
 
 INSERT INTO financas.formaspagamentosnsservicosns
@@ -3552,13 +3561,6 @@ SELECT ser1.id_servicons,ser1.id_servicobanco,ser1.lastupdate,ser1.tenant
 FROM   financasmigration.servicosbancosservicosns ser1
 LEFT JOIN financas.servicosbancosservicosns ser2 ON ser1.id_servicons = ser2.id_servicons AND ser1.id_servicobanco = ser2.id_servicobanco
 WHERE ser2.id_servicons is null;
-
---financas.servicosns
-
-INSERT INTO financas.servicosns
-            (id,codigo,descricao,disponivel,lastupdate,tenant)
-SELECT id,codigo,descricao,disponivel,lastupdate,tenant
-FROM   financasmigration.servicosns;
 
 --financas.taloescheques
 
