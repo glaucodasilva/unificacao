@@ -11,6 +11,11 @@ WHERE gru2.grupoempresarial is null;
 
 --ns.empresas
 
+UPDATE nsmigration.empresas emp1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  emp1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO ns.empresas
             (codigo,descricao,tipoidentificacao,raizcnpj,ordemcnpj,cpf,
              razaosocial,
@@ -63,12 +68,19 @@ SELECT emp1.codigo,emp1.descricao,emp1.tipoidentificacao,emp1.raizcnpj,emp1.orde
        emp1.empresa_multinota,emp1.tenant_multinotas,emp1.optantesegurovida,
        emp1.optantesegurofuneral,emp1.optantepcmso,emp1.lastupdate,emp1.tenant
 FROM   nsmigration.empresas emp1
-LEFT JOIN ns.empresas emp2 ON emp1.codigo = emp2.codigo
+LEFT JOIN ns.empresas emp2 ON emp1.codigo = emp2.codigo AND emp1.raizcnpj = emp2.raizcnpj AND emp1.ordemcnpj = emp2.ordemcnpj
 WHERE emp2.empresa is null;
 
 --ns.estabelecimentos
 
 ALTER TABLE nsmigration.estabelecimentos ADD COLUMN pessoa_old character varying(150);
+
+UPDATE nsmigration.estabelecimentos est1 SET empresa = emp2.empresa
+FROM nsmigration.empresas emp1, ns.empresas emp2
+WHERE est1.empresa = emp1.empresa
+AND emp1.codigo = emp2.codigo
+AND emp1.raizcnpj = emp2.raizcnpj
+AND emp1.ordemcnpj = emp2.ordemcnpj;
 
 UPDATE nsmigration.estabelecimentos est1 SET pessoa_old = pes1.pessoa, id_pessoa = null
 FROM nsmigration.pessoas pes1
@@ -132,7 +144,7 @@ SELECT est1.codigo,est1.descricao,est1.tipoidentificacao,est1.raizcnpj,est1.orde
        est1.importacao_hash,est1.estabelecimento_multinota,est1.entidadeinscritapaa,
        est1.desabilitado_persona,est1.lastupdate,est1.tenant
 FROM   nsmigration.estabelecimentos est1
-LEFT JOIN ns.estabelecimentos est2 ON est1.codigo = est2.codigo
+LEFT JOIN ns.estabelecimentos est2 ON est1.codigo = est2.codigo AND est1.raizcnpj = est2.raizcnpj AND est1.ordemcnpj = est2.ordemcnpj
 WHERE est2.estabelecimento is null;
 
 --financas.tiposcontas
@@ -147,6 +159,70 @@ SELECT tip1.codigo,tip1.descricao,tip1.versao,tip1.tipoconta,tip1.tipocontainter
 FROM   financasmigration.tiposcontas tip1
 LEFT JOIN financas.tiposcontas tip2 ON tip1.codigo = tip2.codigo
 WHERE tip2.tipoconta is null;
+
+--ns.gruposdeusuarios
+
+INSERT INTO ns.gruposdeusuarios
+            (grupodeusuario,codigo,descricao,tenant,lastupdate)
+SELECT grupodeusuario,codigo,descricao,tenant,lastupdate
+FROM   nsmigration.gruposdeusuarios;
+
+--ns.departamentosusuarios
+
+INSERT INTO ns.departamentosusuarios(
+            sigla, nome, versao, departamentousuario, lastupdate, tenant)
+SELECT dep1.sigla, dep1.nome, dep1.versao, dep1.departamentousuario, dep1.lastupdate, dep1.tenant
+FROM nsmigration.departamentosusuarios dep1
+LEFT JOIN ns.departamentosusuarios dep2 ON dep1.nome = dep2.nome
+WHERE dep2.departamentousuario is null;
+
+--ns.perfisusuario
+
+INSERT INTO ns.perfisusuario
+            (nome,descricao,versao,perfilusuario,created_at,created_by,
+             updated_at,updated_by,
+             tenant,interno,configurar_acesso_restrito,lastupdate)
+SELECT per1.nome,per1.descricao,per1.versao,per1.perfilusuario,per1.created_at,per1.created_by,per1.updated_at,
+       per1.updated_by,
+       per1.tenant,per1.interno,per1.configurar_acesso_restrito,per1.lastupdate
+FROM   nsmigration.perfisusuario per1
+LEFT JOIN ns.perfisusuario per2 ON per1.nome = per2.nome
+WHERE per2.perfilusuario is null;
+
+--ns.usuarios
+
+UPDATE nsmigration.usuarios usu1 SET ultimaempresascritta = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  usu1.ultimaempresascritta = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
+UPDATE nsmigration.usuarios usu1 SET ultimogrupo = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  usu1.ultimogrupo = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
+INSERT INTO ns.usuarios
+            (nome,situacao,email,login,senha,temresponsabilidadeatendimento,
+             versao,
+             moduloinicialpersona,moduloinicialscritta,moduloinicialcontabil,
+             ultimoanocontabil,representante,departamento,ultimaempresapersona,
+             ultimoestabelecimentocontabil,ultimaempresascritta,ultimogrupo,
+             perfilusuario,usuario,grupodeusuario,
+             ultimaentidadeempresarial_estoque,bloqueado_ate,telefone,
+             representante_pessoa,vendedor,tenant,
+             ultimoestabelecimentopersonaweb,lastupdate)
+SELECT usu1.nome,usu1.situacao,usu1.email,usu1.login,usu1.senha,usu1.temresponsabilidadeatendimento,usu1.versao,
+       usu1.moduloinicialpersona,usu1.moduloinicialscritta,usu1.moduloinicialcontabil,
+       usu1.ultimoanocontabil,usu1.representante,usu1.departamento,usu1.ultimaempresapersona,
+       usu1.ultimoestabelecimentocontabil,usu1.ultimaempresascritta,usu1.ultimogrupo,
+       usu1.perfilusuario,usu1.usuario,usu1.grupodeusuario,usu1.ultimaentidadeempresarial_estoque,
+       usu1.bloqueado_ate,usu1.telefone,usu1.representante_pessoa,usu1.vendedor,usu1.tenant,
+       usu1.ultimoestabelecimentopersonaweb,usu1.lastupdate
+FROM   nsmigration.usuarios usu1
+LEFT JOIN ns.usuarios usu2 ON usu1.login = usu2.login
+WHERE usu2.usuario is null;
 
 --ns.layoutsrelatorios
 
@@ -199,7 +275,25 @@ FROM   financasmigration.bancos ban1
 LEFT JOIN financas.bancos ban2 on ban1.numero = ban2.numero
 WHERE ban2.banco is null;
 
+--financas.layoutspagamentos
+
+INSERT INTO financas.layoutspagamentos
+            (descricao,tipolayoutpagamento,versao,banco,layoutpagamento,
+             lastupdate,tenant)
+SELECT lay1.descricao,lay1.tipolayoutpagamento,lay1.versao,lay1.banco,lay1.layoutpagamento,lay1.lastupdate,
+       lay1.tenant
+FROM   financasmigration.layoutspagamentos lay1
+LEFt JOIN financas.layoutspagamentos lay2 ON lay1.descricao = lay2.descricao AND lay1.tipolayoutpagamento = lay2.tipolayoutpagamento AND lay1.banco = lay2.banco
+WHERE lay2.layoutpagamento is null;
+
 --financas.contas
+
+UPDATE financasmigration.contas con1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE con1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo
+AND est1.raizcnpj = est2.raizcnpj
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 INSERT INTO financas.contas
             (codigo,nome,limitenegativo,numero,digito,proximocheque,
@@ -289,6 +383,13 @@ FROM crmmigration.parcelamentos par1
 LEFT JOIN crm.parcelamentos par2 ON par1.codigo = par2.codigo
 WHERE par2.parcelamento is null;
 
+--ns.classificados
+
+INSERT INTO ns.classificados(
+            versao, classificado, lastupdate, tenant)
+SELECT versao, classificado, lastupdate, tenant
+FROM nsmigration.classificados;
+
 --ns.pessoas
 
 UPDATE nsmigration.pessoas pes1 set id_formapagamento = for2.formapagamento
@@ -358,7 +459,7 @@ INSERT INTO ns.pessoas
              notafutura,datasituacaopagamento,datatipoclientepagamento,
              reguacobranca,restricaocobranca1,restricaocobranca2,
              restricaocobranca3,tipocliente_codigo,tipocliente_descricao,
-             grupodeparticipante,--desabilitadopersona,
+             grupodeparticipante,desabilitadopersona,
              lastupdate,tenant)
 SELECT pes1.pessoa,pes1.datacadastro,pes1.proximocontato,pes1.nome,pes1.nomefantasia,pes1.tp_identificacao,
        pes1.cnpj,
@@ -409,7 +510,7 @@ SELECT pes1.pessoa,pes1.datacadastro,pes1.proximocontato,pes1.nome,pes1.nomefant
        pes1.datasituacaopagamento,pes1.datatipoclientepagamento,pes1.reguacobranca,
        pes1.restricaocobranca1,pes1.restricaocobranca2,pes1.restricaocobranca3,
        pes1.tipocliente_codigo,pes1.tipocliente_descricao,pes1.grupodeparticipante,
-       --desabilitadopersona,
+       pes1.desabilitadopersona,
        pes1.lastupdate,pes1.tenant
 FROM   nsmigration.pessoas pes1
 LEFT JOIN ns.pessoas pes2 ON pes1.cnpj = pes2.cnpj AND pes1.pessoa = pes2.pessoa
@@ -524,6 +625,18 @@ WHERE pes2.pessoamunicipio is null;
 
 --financas.contratos
 
+UPDATE financasmigration.contratos con1 SET familia = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  con1.familia = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
+UPDATE financasmigration.contratos con1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  con1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 UPDATE financasmigration.contratos con1 set id_formapagamento = for2.formapagamento
 FROM nsmigration.formaspagamentos for1, ns.formaspagamentos for2 
 where con1.id_formapagamento = for1.formapagamento 
@@ -555,7 +668,7 @@ INSERT INTO financas.contratos
              detentor_id,titulosprovisorios,usarindicevariavel,pisretido,
              cofinsretido,csllretido,irretido,issretido,inssretido,
              outrasretencoes,descricaooutrasretencoes,
-             id_tipo_outras_recdesplocacao,--contabilizar,contabilizar_baixa, 
+             id_tipo_outras_recdesplocacao,contabilizar,contabilizar_baixa, 
              lastupdate,tenant)
 SELECT cont1.contrato,cont1.codigo,cont1.descricao,cont1.tipocontrato,cont1.definicaocontratante,
        cont1.definicaobeneficiario,cont1.datainicial,cont1.administradorlegal,cont1.estabelecimento,
@@ -579,7 +692,7 @@ SELECT cont1.contrato,cont1.codigo,cont1.descricao,cont1.tipocontrato,cont1.defi
        cont1.anteciparvencimentodiautil,cont1.contratoemrenegociacao,cont1.layoutcobranca,
        cont1.detentor_id,cont1.titulosprovisorios,cont1.usarindicevariavel,cont1.pisretido,cont1.cofinsretido,
        cont1.csllretido,cont1.irretido,cont1.issretido,cont1.inssretido,cont1.outrasretencoes,
-       cont1.descricaooutrasretencoes,cont1.id_tipo_outras_recdesplocacao,--cont1.contabilizar,cont1.contabilizar_baixa,
+       cont1.descricaooutrasretencoes,cont1.id_tipo_outras_recdesplocacao,cont1.contabilizar,cont1.contabilizar_baixa,
        cont1.lastupdate,cont1.tenant
 FROM   financasmigration.contratos cont1
 LEFT JOIN financas.contratos cont2 ON cont1.codigo = cont2.codigo AND cont1.participante = cont2.participante
@@ -643,6 +756,11 @@ WHERE ser2.serie is null;
 
 --financas.processamentoscontratos
 
+UPDATE financasmigration.processamentoscontratos pro1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  pro1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.processamentoscontratos
             (processamentocontrato,dataprocessamento,tipocontrato,recorrencia,
              status,mes,ano,
@@ -657,6 +775,13 @@ WHERE pro2.processamentocontrato is null;
 
 --estoque.locaisdeestoques
 
+UPDATE estoquemigration.locaisdeestoques loc1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  loc1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO estoque.locaisdeestoques(
             localdeestoque, estabelecimento, codigo, nome, tipo, tipologradouro, 
             logradouro, numero, complemento, cep, bairro, referencia, ibge, 
@@ -669,6 +794,18 @@ LEFT JOIN estoque.locaisdeestoques loc2 ON loc1.estabelecimento = loc2.estabelec
 WHERE loc2.localdeestoque is null;
 
 --ns.df_docfis
+
+UPDATE nsmigration.df_docfis doc1 SET id_grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  doc1.id_grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
+UPDATE nsmigration.df_docfis doc1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  doc1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 UPDATE nsmigration.df_docfis doc1 SET id_cfop = cfop2.id
 FROM nsmigration.cfop cfop1, ns.cfop cfop2
@@ -870,7 +1007,7 @@ INSERT INTO ns.df_pagamentos
              nomeconta,valor,numeroparcelas,datafatura,tipooperacao,
              autorizacaocartao,dataautorizacaocartao,documentocartao,irretido,
              pisretido,cofinsretido,csllretido,tipo,isdefault,issretido,
-             inssretido,id_documentorateado,id_contratocartao,--tenant,
+             inssretido,id_documentorateado,id_contratocartao,tenant,
              percentual,cnpj_operadora,lastupdate)
 SELECT pag1.pagamento,pag1.id_formapagamento,pag1.id_docfis,pag1.id_conta,pag1.id_rateiopadrao,
        pag1.id_meioeletronico
@@ -879,7 +1016,7 @@ SELECT pag1.pagamento,pag1.id_formapagamento,pag1.id_docfis,pag1.id_conta,pag1.i
        pag1.nomeconta,pag1.valor,pag1.numeroparcelas,pag1.datafatura,pag1.tipooperacao,pag1.autorizacaocartao,
        pag1.dataautorizacaocartao,pag1.documentocartao,pag1.irretido,pag1.pisretido,pag1.cofinsretido,
        pag1.csllretido,pag1.tipo,pag1.isdefault,pag1.issretido,pag1.inssretido,pag1.id_documentorateado,
-       pag1.id_contratocartao,--pag1.tenant,
+       pag1.id_contratocartao,pag1.tenant,
        pag1.percentual,pag1.cnpj_operadora,pag1.lastupdate
 FROM   nsmigration.df_pagamentos pag1
 LEFT JOIN ns.df_pagamentos pag2 ON pag1.id_formapagamento = pag2.id_formapagamento AND pag1.id_docfis = pag2.id_docfis AND pag1.id_conta = pag2.id_conta
@@ -890,18 +1027,62 @@ WHERE pag2.pagamento is null;
 INSERT INTO ns.df_parcelas
             (parcela,id_pagamento,numero,valor,vencimento,sequencial,conta,
              usarsaldocredito,
-             valorcreditoautilizar,--tenant,
+             valorcreditoautilizar,tenant,
              competencia,basevencimentoparcela,
              percentual,intervalo,sinal,valoresalteradosmanualmente,lastupdate)
 SELECT par1.parcela,par1.id_pagamento,par1.numero,par1.valor,par1.vencimento,par1.sequencial,par1.conta,
-       par1.usarsaldocredito,par1.valorcreditoautilizar,--par1.tenant,
+       par1.usarsaldocredito,par1.valorcreditoautilizar,par1.tenant,
        par1.competencia,par1.basevencimentoparcela,par1.percentual
        ,par1.intervalo,par1.sinal,par1.valoresalteradosmanualmente,par1.lastupdate
 FROM   nsmigration.df_parcelas par1
 LEFT JOIN ns.df_parcelas par2 ON par1.parcela = par2.parcela
 WHERE par2.parcela is null;
 
+--financas.renegociacoestitulos
+
+UPDATE financasmigration.renegociacoestitulos ren1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  ren1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
+INSERT INTO financas.renegociacoestitulos
+            (id,estabelecimento,pessoa,datarenegociacao,numero,usuario,
+             processado,tipo,
+             qtdtitulosrenegociados,valortitulosrenegociados,desconto,acrescimo,
+             acaoimpostos,observacao,lastupdate,tenant)
+SELECT id,estabelecimento,pessoa,datarenegociacao,numero,usuario,processado,tipo
+       ,
+       qtdtitulosrenegociados,valortitulosrenegociados,desconto,acrescimo,
+       acaoimpostos,observacao,lastupdate,tenant
+FROM   financasmigration.renegociacoestitulos;
+
+--financas.informacoescartoes
+
+UPDATE financasmigration.informacoescartoes inf1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  inf1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
+INSERT INTO financas.informacoescartoes
+            (versao,tipooperacaocartao,bandeiracartao,informacaocartao,
+             meioeletronico,
+             operadoracartao,estabelecimento,lastupdate,tenant)
+SELECT versao,tipooperacaocartao,bandeiracartao,informacaocartao,meioeletronico,
+       operadoracartao,estabelecimento,lastupdate,tenant
+FROM   financasmigration.informacoescartoes;
+
 --financas.titulos
+
+UPDATE financasmigration.titulos tit1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  tit1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 UPDATE financasmigration.titulos tit1 set id_formapagamento = for2.formapagamento
 FROM nsmigration.formaspagamentos for1, ns.formaspagamentos for2 
@@ -972,8 +1153,8 @@ INSERT INTO financas.titulos
              valornamoedaestrangeira,dataultimopagamento,mesanocompetenciagps,
              outrasentidadesgps,saldosemjurosdescontos,
              saldoadiantamentosresgatados,id_titulo_origemcomissao,
-             datacancelamento,id_tipo_despesa_receita)
-             --,origemintegracao,origemintegracaodescricao,tenant)
+             datacancelamento,id_tipo_despesa_receita
+             ,origemintegracao,origemintegracaodescricao,tenant)
 SELECT tit1.sinal,tit1.origem,tit1.numero,tit1.emissao,tit1.vencimento,tit1.situacao,tit1.parcela,tit1.totalparcelas,
        tit1.tppessoa,
        tit1.observacao,tit1.valor,tit1.valorbruto,tit1.irretido,tit1.cofinsretido,tit1.pisretido,tit1.csllretido,
@@ -1029,8 +1210,8 @@ SELECT tit1.sinal,tit1.origem,tit1.numero,tit1.emissao,tit1.vencimento,tit1.situ
        tit1.id_pessoa_reembolso,tit1.statusestorno,tit1.usamoedaestrangeira,tit1.moedaestrangeira,
        tit1.cotacao,tit1.valornamoedaestrangeira,tit1.dataultimopagamento,tit1.mesanocompetenciagps,
        tit1.outrasentidadesgps,tit1.saldosemjurosdescontos,tit1.saldoadiantamentosresgatados,
-       tit1.id_titulo_origemcomissao,tit1.datacancelamento,tit1.id_tipo_despesa_receita
-       --tit1.origemintegracao,tit1.origemintegracaodescricao,tit1.tenant
+       tit1.id_titulo_origemcomissao,tit1.datacancelamento,tit1.id_tipo_despesa_receita,
+       tit1.origemintegracao,tit1.origemintegracaodescricao,tit1.tenant
 FROM   financasmigration.titulos tit1
 LEFT JOIN financas.titulos tit2 ON tit1.sinal = tit2.sinal AND tit1.origem = tit2.origem AND tit1.numero = tit2.numero AND tit1.id_docfis = tit2.id_docfis AND tit1.id_estabelecimento = tit2.id_estabelecimento AND tit1.id_pessoa = tit2.id_pessoa
 WHERE tit2.id is null;
@@ -1246,6 +1427,13 @@ WHERE cad2.cadastro is null;
 
 --ns.empresascadastros
 
+UPDATE nsmigration.empresascadastros empc1 SET empresa = emp2.empresa
+FROM nsmigration.empresas emp1, ns.empresas emp2
+WHERE empc1.empresa = emp1.empresa
+AND emp1.codigo = emp2.codigo
+AND emp1.raizcnpj = emp2.raizcnpj
+AND emp1.ordemcnpj = emp2.ordemcnpj;
+
 INSERT INTO ns.empresascadastros
             (cadastro,empresa,empresacadastro,lastupdate,tenant)
 SELECT cadastro,empresa,empresacadastro,lastupdate,tenant
@@ -1261,12 +1449,27 @@ FROM   nsmigration.estabelecimentosacessosusuarios;
 
 --ns.estabelecimentoscadastros
 
+UPDATE nsmigration.estabelecimentoscadastros estc1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  estc1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO ns.estabelecimentoscadastros
             (cadastro,estabelecimento,estabelecimentocadastro,lastupdate,tenant)
 SELECT cadastro,estabelecimento,estabelecimentocadastro,lastupdate,tenant
 FROM   nsmigration.estabelecimentoscadastros;
 
 --ns.estabelecimentoscfops
+
+UPDATE nsmigration.estabelecimentoscfops estc1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  estc1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 UPDATE nsmigration.estabelecimentoscfops est1 SET cfop = cfop2.id
 FROM nsmigration.cfop cfop1, ns.cfop cfop2
 WHERE cfop1.id = est1.cfop
@@ -1288,12 +1491,18 @@ WHERE con2.conjunto is null;
 
 --ns.estabelecimentosconjuntos
 
-UPDATE nsmigration.estabelecimentosconjuntos est1 SET estabelecimento = est3.estabelecimento
-FROM nsmigration.estabelecimentos est2, ns.estabelecimentos est3
-WHERE est1.estabelecimento = est2.estabelecimento
-AND est2.raizcnpj = est3.raizcnpj
-AND est2.ordemcnpj = est3.ordemcnpj
-AND est2.cpf = est3.cpf;
+UPDATE nsmigration.estabelecimentosconjuntos estc1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  estc1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
+UPDATE nsmigration.estabelecimentosconjuntos estc1 SET conjunto = con2.conjunto
+FROM nsmigration.conjuntos con1, ns.conjuntos con2
+WHERE  estc1.conjunto = con1.conjunto
+AND con1.cadastro = con2.cadastro
+AND con1.codigo = con2.codigo;
 
 INSERT INTO ns.estabelecimentosconjuntos
             (estabelecimentoconjunto,estabelecimento,conjunto,cadastro,permissao
@@ -1369,13 +1578,6 @@ INSERT INTO ns.gruposdeparticipantes
 SELECT grupodeparticipante,codigo,descricao,lastupdate,tenant
 FROM   nsmigration.gruposdeparticipantes;
 
---ns.gruposdeusuarios
-
-INSERT INTO ns.gruposdeusuarios
-            (grupodeusuario,codigo,descricao,tenant,lastupdate)
-SELECT grupodeusuario,codigo,descricao,tenant,lastupdate
-FROM   nsmigration.gruposdeusuarios;
-
 --ns.gruposdeusuariosacessos
 
 INSERT INTO ns.gruposdeusuariosacessos
@@ -1394,6 +1596,11 @@ SELECT grupoempresarialacessousuario,grupoempresarial,usuario,lastupdate,tenant
 FROM   nsmigration.gruposempresariaisacessosusuarios;
 
 --ns.gruposempresariaiscadastros
+
+UPDATE nsmigration.gruposempresariaiscadastros gruc1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  gruc1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO ns.gruposempresariaiscadastros
             (cadastro,grupoempresarial,grupoempresarialcadastro,lastupdate,
@@ -1420,6 +1627,13 @@ FROM   nsmigration.inscricoesestaduais;
 
 --ns.inscricoesestaduaisestabelecimentos
 
+UPDATE nsmigration.inscricoesestaduaisestabelecimentos insc1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  insc1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO ns.inscricoesestaduaisestabelecimentos
             (inscricaoestadual,descricao,tipoinscricaoestadual,estado,versao,
              estabelecimento,
@@ -1430,6 +1644,13 @@ SELECT inscricaoestadual,descricao,tipoinscricaoestadual,estado,versao,
 FROM   nsmigration.inscricoesestaduaisestabelecimentos;
 
 --ns.listasmaladireta
+
+UPDATE nsmigration.listasmaladireta lis1 SET empresa = emp2.empresa
+FROM nsmigration.empresas emp1, ns.empresas emp2
+WHERE lis1.empresa = emp1.empresa
+AND emp1.codigo = emp2.codigo
+AND emp1.raizcnpj = emp2.raizcnpj
+AND emp1.ordemcnpj = emp2.ordemcnpj;
 
 INSERT INTO ns.listasmaladireta
             (tipo,nomelista,descricao,empresa,lista,consultaeditorxml,
@@ -1442,25 +1663,25 @@ FROM   nsmigration.listasmaladireta;
 
 --ns.numeros_docfis
 
+UPDATE nsmigration.numeros_docfis num1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  num1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO ns.numeros_docfis
             (id,id_estabelecimento,id_operacao,proximo_numero,lastupdate,tenant)
 SELECT id,id_estabelecimento,id_operacao,proximo_numero,lastupdate,tenant
 FROM   nsmigration.numeros_docfis;
 
---ns.perfisusuario
-
-INSERT INTO ns.perfisusuario
-            (nome,descricao,versao,perfilusuario,created_at,created_by,
-             updated_at,updated_by,
-             tenant,interno,configurar_acesso_restrito,lastupdate)
-SELECT per1.nome,per1.descricao,per1.versao,per1.perfilusuario,per1.created_at,per1.created_by,per1.updated_at,
-       per1.updated_by,
-       per1.tenant,per1.interno,per1.configurar_acesso_restrito,per1.lastupdate
-FROM   nsmigration.perfisusuario per1
-LEFT JOIN ns.perfisusuario per2 ON per1.nome = per2.nome
-WHERE per2.perfilusuario is null;
-
 --ns.contatos
+
+UPDATE nsmigration.contatos con1 SET id_pessoa = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.id_pessoa = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.contatos
             (nome,nascimento,cargo,sexomasculino,observacao,email,primeironome,
@@ -1486,6 +1707,11 @@ FROM   nsmigration.contadores;
 
 --servicos.tiposprojetos
 
+UPDATE servicosmigration.tiposprojetos tip1 SET grupoempresarial_id = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  tip1.grupoempresarial_id = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO servicos.tiposprojetos(
             tipoprojeto, grupoempresarial_id, codigo, descricao, lastupdate, 
             tenant)
@@ -1493,39 +1719,12 @@ SELECT tipoprojeto, grupoempresarial_id, codigo, descricao, lastupdate,
        tenant
 FROM servicosmigration.tiposprojetos;
 
---ns.departamentosusuarios
-
-INSERT INTO ns.departamentosusuarios(
-            sigla, nome, versao, departamentousuario, lastupdate, tenant)
-SELECT dep1.sigla, dep1.nome, dep1.versao, dep1.departamentousuario, dep1.lastupdate, dep1.tenant
-FROM nsmigration.departamentosusuarios dep1
-LEFT JOIN ns.departamentosusuarios dep2 ON dep1.nome = dep2.nome
-WHERE dep2.departamentousuario is null;
-
---ns.usuarios
-
-INSERT INTO ns.usuarios
-            (nome,situacao,email,login,senha,temresponsabilidadeatendimento,
-             versao,
-             moduloinicialpersona,moduloinicialscritta,moduloinicialcontabil,
-             ultimoanocontabil,representante,departamento,ultimaempresapersona,
-             ultimoestabelecimentocontabil,ultimaempresascritta,ultimogrupo,
-             perfilusuario,usuario,grupodeusuario,
-             ultimaentidadeempresarial_estoque,bloqueado_ate,telefone,
-             representante_pessoa,vendedor,tenant,
-             ultimoestabelecimentopersonaweb,lastupdate)
-SELECT usu1.nome,usu1.situacao,usu1.email,usu1.login,usu1.senha,usu1.temresponsabilidadeatendimento,usu1.versao,
-       usu1.moduloinicialpersona,usu1.moduloinicialscritta,usu1.moduloinicialcontabil,
-       usu1.ultimoanocontabil,usu1.representante,usu1.departamento,usu1.ultimaempresapersona,
-       usu1.ultimoestabelecimentocontabil,usu1.ultimaempresascritta,usu1.ultimogrupo,
-       usu1.perfilusuario,usu1.usuario,usu1.grupodeusuario,usu1.ultimaentidadeempresarial_estoque,
-       usu1.bloqueado_ate,usu1.telefone,usu1.representante_pessoa,usu1.vendedor,usu1.tenant,
-       usu1.ultimoestabelecimentopersonaweb,usu1.lastupdate
-FROM   nsmigration.usuarios usu1
-LEFT JOIN ns.usuarios usu2 ON usu1.login = usu2.login
-WHERE usu2.usuario is null;
-
 --financas.projetos
+
+UPDATE financasmigration.projetos pro1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  pro1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.projetos
             (projeto,codigo,nome,finalizado,datainicio,datafim,grupoempresarial,
@@ -1579,6 +1778,12 @@ SELECT relacaopessoa,pessoaesquerda,pessoadireita,relacao,lastupdate,tenant
 FROM   nsmigration.relacoespessoas;
 
 --ns.telefones
+
+UPDATE nsmigration.telefones tel1 SET id_pessoa = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE tel1.id_pessoa = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.telefones
             (ddd,telefone,chavetel,descricao,ramal,tptelefone,ddi,
@@ -1914,6 +2119,13 @@ FROM   financasmigration.lancamentoscontas;
 
 --financas.baixas
 
+UPDATE financasmigration.baixas bai1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  bai1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.baixas
             (data,documento,favorecido,sinal,historico,valor,percdesconto,
              descontos,percjuros
@@ -2026,6 +2238,11 @@ FROM   financasmigration.borderoseletronicos;
 
 --financas.cenariosorcamentarios
 
+UPDATE financasmigration.cenariosorcamentarios cen1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  cen1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.cenariosorcamentarios
             (cenarioorcamentario,codigo,descricao,ano,tipocenario,
              tipovisualizacao,
@@ -2037,6 +2254,11 @@ SELECT cenarioorcamentario,codigo,descricao,ano,tipocenario,tipovisualizacao,
 FROM   financasmigration.cenariosorcamentarios;
 
 --financas.centroscustos
+
+UPDATE financasmigration.centroscustos cen1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  cen1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.centroscustos
             (codigo,descricao,codigocontabil,resumo,situacao,versao,centrocusto,
@@ -2059,7 +2281,12 @@ SELECT centrocustolanctoexterno,codigo,descricao,locallanctoexterno,lastupdate,
        centrocusto,estabelecimento,bempatrimonial,pessoa,prioridade,tenant
 FROM   financasmigration.centroscustoslancamentosexternos;
 
-/*--financas.chequescustodias
+--financas.chequescustodias
+
+UPDATE financasmigration.chequescustodias che1 SET id_grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  che1.id_grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.chequescustodias
             (chequecustodia,formaentrada,identificacao,tipificacao,situacao,
@@ -2067,16 +2294,16 @@ INSERT INTO financas.chequescustodias
              ,datadeposito,dataprevistacredito,tipobaixa,id_grupoempresarial,
              id_estabelecimento,id_conta,id_cliente,id_layoutcustodiacheque,
              id_documentorateado,identificadorbancario,lastupdate,tenant,
-             --banconumero,contanumero,
+             banconumero,contanumero,
              agencianumero,nomepessoacheque,observacao,
              statuscheque)
 SELECT chequecustodia,formaentrada,identificacao,tipificacao,situacao,valor,
        datacaptura
        ,datadeposito,dataprevistacredito,tipobaixa,id_grupoempresarial,
        id_estabelecimento,id_conta,id_cliente,id_layoutcustodiacheque,
-       id_documentorateado,identificadorbancario,lastupdate,tenant--,banconumero, contanumero,
+       id_documentorateado,identificadorbancario,lastupdate,tenant,banconumero, contanumero,
        agencianumero,nomepessoacheque,observacao,statuscheque
-FROM   financasmigration.chequescustodias;*/
+FROM   financasmigration.chequescustodias;
 
 --financas.chequespagamentos
 
@@ -2172,6 +2399,11 @@ FROM   financasmigration.configuracoesbancarias;
 
 --financas.configuracoescontasinvestimentos
 
+UPDATE financasmigration.configuracoescontasinvestimentos con1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  con1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.configuracoescontasinvestimentos
             (configuracaocontainvestimento,containvestimento,contafinanceira,
              grupoempresarial
@@ -2182,6 +2414,11 @@ SELECT configuracaocontainvestimento,containvestimento,contafinanceira,
 FROM   financasmigration.configuracoescontasinvestimentos;
 
 --financas.configuracoesfluxocaixa
+
+UPDATE financasmigration.configuracoesfluxocaixa con1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  con1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.configuracoesfluxocaixa
             (configuracaofluxocaixa,tempominimoprocessamento,
@@ -2226,6 +2463,11 @@ FROM   financasmigration.configuracoesrateiosinvestimentos;
 
 --financas.configuracoesterceirizacao
 
+UPDATE financasmigration.configuracoesterceirizacao con1 SET id_grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  con1.id_grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.configuracoesterceirizacao
             (id,percentualtaxacobranca,limitequitacao,id_fornecedor,
              id_grupoempresarial,
@@ -2250,12 +2492,29 @@ FROM   financasmigration.contasfornecedores;
 
 --financas.contasperfisusuario
 
+UPDATE financasmigration.contasperfisusuario con1 set conta = cont2.conta
+FROM financasmigration.contas cont1, financas.contas cont2 
+where con1.conta = cont1.conta 
+AND cont1.codigo = cont2.codigo;
+
+UPDATE financasmigration.contasperfisusuario con1 set perfilusuario = per2.perfilusuario
+FROM nsmigration.perfisusuario per1, ns.perfisusuario per2 
+where con1.perfilusuario = per1.perfilusuario 
+AND per1.nome = per2.nome;
+
 INSERT INTO financas.contasperfisusuario
             (contaperfisusuario,conta,perfilusuario,permitido,lastupdate,tenant)
-SELECT contaperfisusuario,conta,perfilusuario,permitido,lastupdate,tenant
-FROM   financasmigration.contasperfisusuario;
+SELECT con1.contaperfisusuario,con1.conta,con1.perfilusuario,con1.permitido,con1.lastupdate,con1.tenant
+FROM   financasmigration.contasperfisusuario con1
+LEFT JOIN financas.contasperfisusuario con2 ON con1.conta = con2.conta AND con1.perfilusuario = con2.perfilusuario
+WHERE con2.contaperfisusuario is null;
 
 --financas.contratoscartoes
+
+UPDATE financasmigration.contratoscartoes con1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  con1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.contratoscartoes
             (tipooperacao,diaspagamento,versao,codigocontabil,bandeiracartao,
@@ -2289,6 +2548,13 @@ SELECT cotacaoinvestimento,data,valor,investimento,grupocotacao,aplicacao,
 FROM   financasmigration.cotacoesinvestimentos;
 
 --financas.dadosanaliticosfluxocaixa
+
+UPDATE financasmigration.dadosanaliticosfluxocaixa dad1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  dad1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 INSERT INTO financas.dadosanaliticosfluxocaixa
             (dadoanaliticofluxocaixa,estabelecimento,classificacaofinanceira,
@@ -2356,6 +2622,13 @@ FROM   financasmigration.despesasmedicas;
 
 --financas.documentosajustesrateios
 
+UPDATE financasmigration.documentosajustesrateios dad1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  dad1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.documentosajustesrateios
             (documentoajusterateio,codigo,descricao,data,datacompetencia,
              datacriacao,
@@ -2388,6 +2661,13 @@ SELECT limiteparcelamento,percentualtarifa,versao,contratocartao,
 FROM   financasmigration.faixastarifascartoes;
 
 --financas.faturas
+
+UPDATE financasmigration.faturas fat1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  fat1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 INSERT INTO financas.faturas
             (id,estabelecimento,cliente,emissao,numero,usuario,processado,
@@ -2469,6 +2749,13 @@ WHERE fin2.id is null;
 
 --financas.formaspagamentoporcontasfinanceiras
 
+UPDATE financasmigration.formaspagamentoporcontasfinanceiras for1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  for1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.formaspagamentoporcontasfinanceiras
             (formapagamentoporcontafinanceira,estabelecimento,formapagamento,
              conta,lastupdate
@@ -2507,7 +2794,7 @@ AND for3.codigo = for2.codigo;
 
 INSERT INTO financas.formaspagamentosbancosservicosbancos
             (id_servicobanco,id_formapagamentobanco,lastupdate,tenant)
-SELECT for1.id_servicobanco,for1.id_formapagamentobanco,for1.lastupdate,for1.tenant
+SELECT DISTINCT ON (for1.id_servicobanco,for1.id_formapagamentobanco)for1.id_servicobanco,for1.id_formapagamentobanco,for1.lastupdate,for1.tenant
 FROM   financasmigration.formaspagamentosbancosservicosbancos for1
 LEFT JOIN financas.formaspagamentosbancosservicosbancos for2 ON for1.id_servicobanco = for2.id_servicobanco AND for1.id_formapagamentobanco = for2.id_formapagamentobanco
 WHERE for2.id_formapagamentobanco is null;
@@ -2552,10 +2839,10 @@ WHERE ges2.gestoraplicacao is null;
 
 INSERT INTO financas.gruposclassificadores
             (grupoclassificador,nome,relatoriogrupoclassificador,
-             grupoclassificadorpai,ordem,--ultimonivel,multiplicadorgrupo,listahierarquica,
+             grupoclassificadorpai,ordem,ultimonivel,multiplicadorgrupo,listahierarquica,
              lastupdate,tenant)
 SELECT gru1.grupoclassificador,gru1.nome,gru1.relatoriogrupoclassificador,gru1.grupoclassificadorpai
-       ,gru1.ordem,--gru1.ultimonivel,gru1.multiplicadorgrupo,gru1.listahierarquica,
+       ,gru1.ordem,gru1.ultimonivel,gru1.multiplicadorgrupo,gru1.listahierarquica,
        gru1.lastupdate,gru1.tenant
 FROM   financasmigration.gruposclassificadores gru1
 LEFT JOIN financas.gruposclassificadores gru2 ON gru1.nome = gru2.nome
@@ -2571,6 +2858,11 @@ LEFT JOIN financas.gruposcotacoes gru2 ON gru1.codigo = gru2.codigo
 WHERE gru2.grupocotacao is null;
 
 --financas.gruposcotgruposemp
+
+UPDATE financas.gruposcotgruposemp grue1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  grue1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.gruposcotgruposemp
             (grupocotgrupoemp,grupocotacao,grupoempresarial,lastupdate,tenant)
@@ -2606,6 +2898,11 @@ WHERE his2.historicodespesamedica is null;
 
 --financas.historicosanalisesinadimplencias
 
+UPDATE financasmigration.historicosanalisesinadimplencias his1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  his1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.historicosanalisesinadimplencias
             (historicoanaliseinadimplencia,data,hora,grupoempresarial,usuario,
              login,
@@ -2634,7 +2931,6 @@ FROM   financasmigration.historicosanalisesinadimplenciasitens his1
 LEFT JOIN financas.historicosanalisesinadimplenciasitens his2 ON his1.titulo = his2.titulo AND his1.historicoanaliseinadimplencia = his2.historicoanaliseinadimplencia
 WHERE his2.historicoanaliseinadimplenciaitem is null;
 
-/*
 --financas.historicoschequescustodias
 
 INSERT INTO financas.historicoschequescustodias
@@ -2646,7 +2942,6 @@ SELECT id,id_chequecustodia,id_titulo,id_usuario,data,login,nomeusuario,
        numero_titulo,
        valor_titulo,valor_utilizado,nomepessoa_titulo,acao,lastupdate,tenant
 FROM   financasmigration.historicoschequescustodias;
-*/
 
 --financas.historicostitulos
 
@@ -2660,6 +2955,11 @@ SELECT historicotitulo,id_titulo,id_usuario,tipotitulo,tipoalteracao,
 FROM   financasmigration.historicostitulos;
 
 --financas.inadimplenciasexcecoesclientes
+
+UPDATE financasmigration.inadimplenciasexcecoesclientes ina1 SET id_grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  ina1.id_grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.inadimplenciasexcecoesclientes
             (id,diasatrasos,id_cliente,id_grupoempresarial,lastupdate,tenant)
@@ -2680,16 +2980,6 @@ INSERT INTO financas.indicesdiarios
              tenant)
 SELECT indicediario,codigo,descricao,regracalculo,qtddecimais,lastupdate,tenant
 FROM   financasmigration.indicesdiarios;
-
---financas.informacoescartoes
-
-INSERT INTO financas.informacoescartoes
-            (versao,tipooperacaocartao,bandeiracartao,informacaocartao,
-             meioeletronico,
-             operadoracartao,estabelecimento,lastupdate,tenant)
-SELECT versao,tipooperacaocartao,bandeiracartao,informacaocartao,meioeletronico,
-       operadoracartao,estabelecimento,lastupdate,tenant
-FROM   financasmigration.informacoescartoes;
 
 --financas.investimentos
 
@@ -2769,6 +3059,13 @@ FROM   financasmigration.orcamentos;
 
 --financas.itenscenariosorcamentarios
 
+UPDATE financasmigration.itenscenariosorcamentarios ite1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  ite1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.itenscenariosorcamentarios
             (itemcenarioorcamentario,cenarioorcamentario,mes,valor,
              classificacaofinanceira,
@@ -2780,7 +3077,6 @@ SELECT itemcenarioorcamentario,cenarioorcamentario,mes,valor,
        lastupdate,tenant
 FROM   financasmigration.itenscenariosorcamentarios;
 
-/*
 --financas.itenschequescustodiasendossos
 
 INSERT INTO financas.itenschequescustodiasendossos
@@ -2804,7 +3100,7 @@ SELECT id,id_chequecustodia,id_titulo,id_baixa,numero_titulo,emissao_titulo,
        vencimento_titulo,valor_titulo,nomecliente_titulo,codigoconta_titulo,
        valorusadonabaixa,lastupdate,tenant
 FROM   financasmigration.itenschequescustodiasrecebimentos;
-*/
+
 --financas.itenschequespagamentos
 
 INSERT INTO financas.itenschequespagamentos
@@ -3037,6 +3333,11 @@ FROM   financasmigration.lancamentosexternos;
 
 --financas.lancamentostituloscoberturascontas
 
+UPDATE financasmigration.lancamentostituloscoberturascontas lan1 SET idgrupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  lan1.idgrupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.lancamentostituloscoberturascontas
             (id,idtitulo,idlancamento,idgrupoempresarial,lastupdate,tenant)
 SELECT id,idtitulo,idlancamento,idgrupoempresarial,lastupdate,tenant
@@ -3072,17 +3373,6 @@ INSERT INTO financas.layoutsimpressorascheques
 SELECT id,codigo,descricao,id_banco,id_layoutrelatorio,lastupdate,tenant
 FROM   financasmigration.layoutsimpressorascheques;
 
---financas.layoutspagamentos
-
-INSERT INTO financas.layoutspagamentos
-            (descricao,tipolayoutpagamento,versao,banco,layoutpagamento,
-             lastupdate,tenant)
-SELECT lay1.descricao,lay1.tipolayoutpagamento,lay1.versao,lay1.banco,lay1.layoutpagamento,lay1.lastupdate,
-       lay1.tenant
-FROM   financasmigration.layoutspagamentos lay1
-LEFt JOIN financas.layoutspagamentos lay2 ON lay1.descricao = lay2.descricao AND lay1.tipolayoutpagamento = lay2.tipolayoutpagamento AND lay1.banco = lay2.banco
-WHERE lay2.layoutpagamento is null;
-
 --financas.locaislancamentosexternos
 
 INSERT INTO financas.locaislancamentosexternos
@@ -3102,6 +3392,13 @@ SELECT logotipobempatrimonial,bempatrimonial,logotipo,ordem,lastupdate,tenant
 FROM   financasmigration.logotiposbenspatrimoniais;
 
 --financas.lotesfaturas
+
+UPDATE financasmigration.lotesfaturas lot1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  lot1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 INSERT INTO financas.lotesfaturas
             (id,estabelecimento,numero,emissao,datacriacao,usuario,datainicio,
@@ -3269,6 +3566,11 @@ FROM   financasmigration.planossaude;
 
 --financas.prestacoesdecontas
 
+UPDATE financasmigration.prestacoesdecontas pre1 SET id_grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  pre1.id_grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.prestacoesdecontas
             (id,numero,data,id_contaemprestimo,situacao,id_grupoempresarial,
              documentorateado,
@@ -3281,6 +3583,13 @@ SELECT id,numero,data,id_contaemprestimo,situacao,id_grupoempresarial,
 FROM   financasmigration.prestacoesdecontas;
 
 --financas.previsoespagar
+
+UPDATE financasmigration.previsoespagar pre1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  pre1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 INSERT INTO financas.previsoespagar
             (codigo,valor,datainicio,datatermino,dataproximolancamento,
@@ -3296,6 +3605,13 @@ SELECT codigo,valor,datainicio,datatermino,dataproximolancamento,duracaofinita,
 FROM   financasmigration.previsoespagar;
 
 --financas.previsoesreceber
+
+UPDATE financasmigration.previsoesreceber pre1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  pre1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 INSERT INTO financas.previsoesreceber
             (codigo,valor,datainicio,datatermino,dataproximolancamento,
@@ -3341,6 +3657,13 @@ FROM   financasmigration.projetosgestores;
 
 --financas.rateiosfinanceiros
 
+UPDATE financasmigration.rateiosfinanceiros rat1 SET id_estabelecimento_reembolso = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  rat1.id_estabelecimento_reembolso = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.rateiosfinanceiros
             (valor,versao,centrocusto,classificacaofinanceira,documentorateado,
              rateiofinanceiro,projeto,itemcontrato,discriminacao,percentual,
@@ -3374,6 +3697,13 @@ FROM   financasmigration.rateiospadraovalores;
 
 --financas.reembolsos
 
+UPDATE financasmigration.reembolsos ree1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  ree1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.reembolsos
             (reembolso,id_estabelecimento,id_pessoa,id_funcionario,valor,
              valor_regularizado,
@@ -3402,6 +3732,13 @@ FROM   financasmigration.reembolsosdespesamedica;
 
 --financas.reembolsospessoas
 
+UPDATE financasmigration.reembolsospessoas ree1 SET estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  ree1.estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.reembolsospessoas
             (reembolsopessoa,numero,emissao,pessoa,situacao,estabelecimento,
              conta,
@@ -3429,6 +3766,11 @@ FROM   financasmigration.reembolsossolucionados;
 
 --financas.reguascobrancas
 
+UPDATE financasmigration.reguascobrancas reg1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  reg1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.reguascobrancas
             (reguacobranca,codigo,descricao,grupoempresarial,lastupdate,tenant)
 SELECT reguacobranca,codigo,descricao,grupoempresarial,lastupdate,tenant
@@ -3453,10 +3795,15 @@ FROM   financasmigration.reguascobrancasetapascontrole;
 
 --financas.relatoriosgruposclassificadores
 
+UPDATE financasmigration.relatoriosgruposclassificadores rel1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  rel1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
 INSERT INTO financas.relatoriosgruposclassificadores
-            (relatoriogrupoclassificador,grupoempresarial,nome,--tipodinamico,
+            (relatoriogrupoclassificador,grupoempresarial,nome,tipodinamico,
              lastupdate,tenant)
-SELECT relatoriogrupoclassificador,grupoempresarial,nome,--tipodinamico,
+SELECT relatoriogrupoclassificador,grupoempresarial,nome,tipodinamico,
        lastupdate,tenant
 FROM   financasmigration.relatoriosgruposclassificadores;
 
@@ -3469,6 +3816,18 @@ FROM   financasmigration.rendimentosdiariosaplicacoes;
 
 --financas.renegociacoescontratos
 
+UPDATE financasmigration.renegociacoescontratos ren1 SET id_grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  ren1.id_grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
+
+UPDATE financasmigration.renegociacoescontratos ren1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  ren1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.renegociacoescontratos
             (renegociacaocontrato,id_contrato,id_cliente,id_estabelecimento,
              id_grupoempresarial,id_usuarioresponsavel,id_usuariologado,numero,
@@ -3478,20 +3837,12 @@ SELECT renegociacaocontrato,id_contrato,id_cliente,id_estabelecimento,
        ,totalparcelas,totalrenegociado,status,lastupdate,tenant
 FROM   financasmigration.renegociacoescontratos;
 
---financas.renegociacoestitulos
-
-INSERT INTO financas.renegociacoestitulos
-            (id,estabelecimento,pessoa,datarenegociacao,numero,usuario,
-             processado,tipo,
-             qtdtitulosrenegociados,valortitulosrenegociados,desconto,acrescimo,
-             acaoimpostos,observacao,lastupdate,tenant)
-SELECT id,estabelecimento,pessoa,datarenegociacao,numero,usuario,processado,tipo
-       ,
-       qtdtitulosrenegociados,valortitulosrenegociados,desconto,acrescimo,
-       acaoimpostos,observacao,lastupdate,tenant
-FROM   financasmigration.renegociacoestitulos;
-
 --financas.resgates
+
+UPDATE financasmigration.resgates reg1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  reg1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.resgates
             (resgate,codigo,descricao,data,investimento,valor,
@@ -3505,6 +3856,11 @@ SELECT resgate,codigo,descricao,data,investimento,valor,taxasadministrativas,
 FROM   financasmigration.resgates;
 
 --financas.restricoescobrancas
+
+UPDATE financasmigration.restricoescobrancas res1 SET grupoempresarial = gru2.grupoempresarial
+FROM nsmigration.gruposempresariais gru1, ns.gruposempresariais gru2
+WHERE  res1.grupoempresarial = gru1.grupoempresarial
+AND gru1.codigo = gru2.codigo;
 
 INSERT INTO financas.restricoescobrancas
             (restricaocobranca,codigo,descricao,grupoempresarial,lastupdate,
@@ -3579,6 +3935,13 @@ FROM   financasmigration.taloescheques;
 
 --financas.terceirizacaocobrancas
 
+UPDATE financasmigration.terceirizacaocobrancas ter1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  ter1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.terceirizacaocobrancas
             (terceirizacaocobranca,codigo,data,id_estabelecimento,id_fornecedor,
              percentualtaxacobrancaterceirizacao,valortotal,lastupdate,tenant)
@@ -3640,6 +4003,13 @@ WHERE tip2.id is null;
 
 --financas.tituloscancelados
 
+UPDATE financasmigration.tituloscancelados tit1 SET id_estabelecimento = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  tit1.id_estabelecimento = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
 INSERT INTO financas.tituloscancelados
             (sinal,origem,numero,emissao,vencimento,situacao,parcela,
              totalparcelas,tppessoa,
@@ -3689,8 +4059,8 @@ INSERT INTO financas.tituloscancelados
              coberturaconta,documentorateadocobertura,id_documento_associado,
              contafornecedor,previsto,pagamento,parcelapagamento,contabilizado,
              importacao_hash,cfop_codigo,id_titulovinculo_previsao,
-             id_previsao_vinculada,id_proposta,tipocredito,--id_cfop,
-             dataregularizacao,creditoidentificado,lancamentocontatc_id,
+             id_previsao_vinculada,id_proposta,--id_cfop,
+             tipocredito,dataregularizacao,creditoidentificado,lancamentocontatc_id,
              enviadoremessacobranca,contabilizar,contabilizar_baixa,
              outrasretencoes,descricaooutrasretencoes,razaosocialfactoring,
              numerodocumentofactoring,razaosocialgps,numerodocumentogps,
@@ -3703,7 +4073,7 @@ INSERT INTO financas.tituloscancelados
              valornamoedaestrangeira,dataultimopagamento,saldosemjurosdescontos,
              saldoadiantamentosresgatados,mesanocompetenciagps,
              outrasentidadesgps,id_titulo_origemcomissao,datacancelamento,
-             id_tipo_despesa_receita,--origemintegracao,origemintegracaodescricao,
+             id_tipo_despesa_receita,origemintegracao,origemintegracaodescricao,
              lastupdate,tenant)
 SELECT sinal,origem,numero,emissao,vencimento,situacao,parcela,totalparcelas,
        tppessoa,
@@ -3761,7 +4131,7 @@ SELECT sinal,origem,numero,emissao,vencimento,situacao,parcela,totalparcelas,
        cotacao,valornamoedaestrangeira,dataultimopagamento,
        saldosemjurosdescontos,saldoadiantamentosresgatados,mesanocompetenciagps,
        outrasentidadesgps,id_titulo_origemcomissao,datacancelamento,
-       id_tipo_despesa_receita,--origemintegracao,origemintegracaodescricao,
+       id_tipo_despesa_receita,origemintegracao,origemintegracaodescricao,
        lastupdate,tenant
 FROM   financasmigration.tituloscancelados;
 
@@ -3833,6 +4203,20 @@ SELECT valoritemvariavel,itemcontrato,dia,semana,mes,ano,valor,
 FROM   financasmigration.valoresitensvariaveis;
 
 --financas.vinculosestabelecimentos
+
+UPDATE financasmigration.vinculosestabelecimentos vin1 SET estabelecimentoorigem = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  vin1.estabelecimentoorigem = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
+
+UPDATE financasmigration.vinculosestabelecimentos vin1 SET estabelecimentovinculado = est2.estabelecimento
+FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
+WHERE  vin1.estabelecimentovinculado = est1.estabelecimento
+AND est1.codigo = est2.codigo 
+AND est1.raizcnpj = est2.raizcnpj 
+AND est1.ordemcnpj = est2.ordemcnpj;
 
 INSERT INTO financas.vinculosestabelecimentos
             (vinculoestabelecimento,estabelecimentoorigem,
