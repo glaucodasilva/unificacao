@@ -1086,9 +1086,15 @@ AND est1.ordemcnpj = est2.ordemcnpj;
 
 UPDATE financasmigration.titulos tit1 set id_formapagamento = for2.formapagamento
 FROM nsmigration.formaspagamentos for1, ns.formaspagamentos for2 
-where tit1.id_formapagamento = for1.formapagamento 
+WHERE tit1.id_formapagamento = for1.formapagamento 
 AND for1.tipo = for2.tipo 
 AND for1.codigo = for2.codigo;
+
+UPDATE financasmigration.titulos tit1 SET id_pessoa = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE tit1.id_pessoa = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO financas.titulos
             (sinal,origem,numero,emissao,vencimento,situacao,parcela,
