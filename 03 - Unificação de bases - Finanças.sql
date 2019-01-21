@@ -1075,7 +1075,54 @@ SELECT versao,tipooperacaocartao,bandeiracartao,informacaocartao,meioeletronico,
        operadoracartao,estabelecimento,lastupdate,tenant
 FROM   financasmigration.informacoescartoes;
 
+--ns.moedas
+
+INSERT INTO ns.moedas(
+            codigo, nomesingular, nomeplural, fracaosingular, fracaoplural, 
+            simbolo, decimais, moeda, lastupdate, tenant)
+SELECT codigo, nomesingular, nomeplural, fracaosingular, fracaoplural, 
+       simbolo, decimais, moeda, lastupdate, tenant
+FROM nsmigration.moedas;
+
 --financas.titulos
+
+UPDATE financasmigration.titulos tit1 SET id_contrato = con2.contrato
+FROM financasmigration.contratos con1, financas.contratos con2
+WHERE tit1.id_contrato = con1.contrato
+AND con1.codigo = con2.codigo 
+AND con1.participante = con2.participante;
+
+UPDATE financasmigration.titulos tit1 SET id_tipo_despesa_receita = tip2.tipodespesareceita
+FROM financasmigration.tipos_despesas_receitas tip1, financas.tipos_despesas_receitas tip2
+WHERE tit1.id_tipo_despesa_receita = tip1.tipodespesareceita
+AND tip1.codigo = tip2.codigo 
+AND tip1.tipo = tip2.tipo;
+
+UPDATE financasmigration.titulos tit1 SET id_pessoa_reembolso = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE tit1.id_pessoa_reembolso = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
+
+UPDATE financasmigration.titulos tit1 SET moedaestrangeira = moe2.moeda
+FROM nsmigration.moedas moe1, ns.moedas moe2
+WHERE tit1.moedaestrangeira = moe1.moeda
+AND moe1.codigo = moe2.codigo;
+
+UPDATE financasmigration.titulos tit1 SET id_contaemprestimo = con2.conta
+FROM financasmigration.contas con1, financas.contas con2
+WHERE tit1.id_contaemprestimo = con1.conta
+AND con1.codigo = con2.codigo;
+
+UPDATE financasmigration.titulos tit1 SET id_renegociacaocontrato = ren2.renegociacaocontrato
+FROM financasmigration.renegociacoescontratos ren1, financas.renegociacoescontratos ren2
+WHERE tit1.id_renegociacaocontrato = ren1.renegociacaocontrato
+AND ren1.id_contrato = ren2.id_contrato 
+AND ren1.id_cliente = ren2.id_cliente
+AND ren1.id_estabelecimento = ren2.id_estabelecimento
+AND ren1.numero = ren2.numero;
+
+
 
 UPDATE financasmigration.titulos tit1 SET id_estabelecimento = est2.estabelecimento
 FROM nsmigration.estabelecimentos est1, ns.estabelecimentos est2
@@ -1257,6 +1304,21 @@ SELECT cla1.codigo,cla1.descricao,cla1.codigocontabil,cla1.resumo,cla1.situacao,
 FROM   financasmigration.classificacoesfinanceiras cla1
 LEFT JOIN financas.classificacoesfinanceiras cla2 ON cla1.codigo = cla2.codigo
 WHERE cla2.classificacaofinanceira is null;
+
+--servicos.servicoscatalogo
+
+INSERT INTO servicos.servicoscatalogo(
+            servicocatalogo, codigo, descricao, bloqueado, valortotal, id_grupo, 
+            tipo, validaate, catalogooferta, id_servicocatalogo_cancelamento, 
+            modofaturamentopacote, modoprovisionamentopacote, id_item, valorunitario, 
+            modocomponentizacaopacote, id_classificacao_financeira, mudou_codigo_descricao, 
+            mudou_valorunitario, tenant, produto, lastupdate)
+SELECT servicocatalogo, codigo, descricao, bloqueado, valortotal, id_grupo, 
+       tipo, validaate, catalogooferta, id_servicocatalogo_cancelamento, 
+       modofaturamentopacote, modoprovisionamentopacote, id_item, valorunitario, 
+       modocomponentizacaopacote, id_classificacao_financeira, mudou_codigo_descricao, 
+       mudou_valorunitario, tenant, produto, lastupdate
+FROM servicosmigration.servicoscatalogo;
 
 --servicos.servicos
 
@@ -4250,6 +4312,14 @@ WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
 
+UPDATE nsmigration.conjuntosclassificacoesparticipantes con1 SET registro = cla2.id
+FROM nsmigration.clapes cla1, ns.clapes cla2
+WHERE con1.registro = cla1.id
+AND cla1.codigo = cla2.codigo
+AND cla1.descricao = cla2.descricao
+AND cla1.tipoclapes = cla2.tipoclapes
+AND cla1.id_grupo = cla2.id_grupo;
+
 INSERT INTO ns.conjuntosclassificacoesparticipantes
             (conjuntoclassificacaoparticipante,registro,conjunto,lastupdate,
              tenant)
@@ -4267,6 +4337,12 @@ WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
 
+UPDATE nsmigration.conjuntosclientes con1 SET registro = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.registro = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
+
 INSERT INTO ns.conjuntosclientes
             (conjuntocliente,registro,conjunto,lastupdate,tenant)
 SELECT con1.conjuntocliente,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
@@ -4281,6 +4357,12 @@ FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
+
+UPDATE nsmigration.conjuntosfichas con1 SET registro = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.registro = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosfichas
             (conjuntoficha,registro,conjunto,lastupdate,tenant)
@@ -4298,6 +4380,12 @@ WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
 
+UPDATE nsmigration.conjuntosfornecedores con1 SET registro = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.registro = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
+
 INSERT INTO ns.conjuntosfornecedores
             (conjuntofornecedor,registro,conjunto,lastupdate,tenant)
 SELECT con1.conjuntofornecedor,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
@@ -4312,6 +4400,12 @@ FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
+
+UPDATE nsmigration.conjuntosmodeloscontratos con1 SET registro = mod2.modelocontrato
+FROM financasmigration.modeloscontratos mod1, financas.modeloscontratos mod2
+WHERE con1.registro = mod1.modelocontrato
+AND mod1.codigo = mod2.codigo 
+AND mod1.descricao = mod2.descricao;
 
 INSERT INTO ns.conjuntosmodeloscontratos
             (conjuntomodelocontrato,registro,conjunto,lastupdate,tenant)
@@ -4328,6 +4422,12 @@ WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
 
+UPDATE nsmigration.conjuntosrepresentantescomerciais con1 SET registro = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.registro = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
+
 INSERT INTO ns.conjuntosrepresentantescomerciais
             (conjuntorepresentantecomercial,registro,conjunto,lastupdate,tenant)
 SELECT con1.conjuntorepresentantecomercial,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
@@ -4342,6 +4442,12 @@ FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
+
+UPDATE nsmigration.conjuntosrepresentantestecnicos con1 SET registro = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.registro = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosrepresentantestecnicos
             (conjuntorepresentantetecnico,registro,conjunto,lastupdate,tenant)
@@ -4358,6 +4464,11 @@ WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
 
+UPDATE nsmigration.conjuntosservicos con1 SET registro = ser2.id
+FROM servicosmigration.servicos ser1, servicos.servicos ser2
+WHERE con1.registro = ser1.id
+AND ser1.servico = ser2.servico;
+
 INSERT INTO ns.conjuntosservicos
             (conjuntoservico,registro,conjunto,lastupdate,tenant)
 SELECT con1.conjuntoservico,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
@@ -4372,6 +4483,13 @@ FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
+
+UPDATE nsmigration.conjuntosservicosdecatalogos con1 SET registro = ser2.servicocatalogo
+FROM servicosmigration.servicoscatalogo ser1, servicos.servicoscatalogo ser2
+WHERE con1.registro = ser1.servicocatalogo
+AND ser1.codigo = ser2.codigo
+AND ser1.id_grupo = ser2.id_grupo
+AND ser1.tipo = ser2.tipo;
 
 INSERT INTO ns.conjuntosservicosdecatalogos
             (conjuntoservicodecatalogo,registro,conjunto,lastupdate,tenant)
@@ -4388,6 +4506,12 @@ WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
 
+UPDATE nsmigration.conjuntostecnicos con1 SET registro = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.registro = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
+
 INSERT INTO ns.conjuntostecnicos
             (conjuntotecnico,registro,conjunto,lastupdate,tenant)
 SELECT con1.conjuntotecnico,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
@@ -4403,6 +4527,12 @@ WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
 
+UPDATE nsmigration.conjuntostransportadoras con1 SET registro = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.registro = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
+
 INSERT INTO ns.conjuntostransportadoras
             (conjuntotransportador,registro,conjunto,lastupdate,tenant)
 SELECT con1.conjuntotransportador,con1.registro,con1.conjunto,con1.lastupdate,con1.tenant
@@ -4417,6 +4547,12 @@ FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
 AND con2.descricao = con3.descricao;
+
+UPDATE nsmigration.conjuntosvendedores con1 SET registro = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE con1.registro = pes1.id
+AND pes1.cnpj = pes2.cnpj 
+AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosvendedores
             (conjuntovendedor,registro,conjunto,lastupdate,tenant)
