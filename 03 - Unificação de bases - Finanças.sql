@@ -462,7 +462,7 @@ INSERT INTO ns.pessoas
              grupodeparticipante,desabilitadopersona,
              lastupdate,tenant)
 SELECT pes1.pessoa,pes1.datacadastro,pes1.proximocontato,pes1.nome,pes1.nomefantasia,pes1.tp_identificacao,
-       pes1.cnpj,
+       COALESCE(pes1.cnpj, '0'),
        pes1.chavecnpj,pes1.cpf,pes1.caepf,pes1.inscricaoestadual,pes1.inscestsubstituto,
        pes1.inscricaomunicipal,pes1.rntrc,pes1.identidade,pes1.suframa,pes1.nit,pes1.nire,pes1.observacao,pes1.email,
        pes1.site,pes1.codigopis,pes1.codigocofins,pes1.codigocsll,pes1.codigoirrf,pes1.conta,pes1.contrapartida,
@@ -513,7 +513,7 @@ SELECT pes1.pessoa,pes1.datacadastro,pes1.proximocontato,pes1.nome,pes1.nomefant
        pes1.desabilitadopersona,
        pes1.lastupdate,pes1.tenant
 FROM   nsmigration.pessoas pes1
-LEFT JOIN ns.pessoas pes2 ON pes1.cnpj = pes2.cnpj AND pes1.pessoa = pes2.pessoa
+LEFT JOIN ns.pessoas pes2 ON COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') AND pes1.pessoa = pes2.pessoa
 WHERE pes2.id is null;
 
 --ns.classificadores
@@ -1101,7 +1101,7 @@ AND tip1.tipo = tip2.tipo;
 UPDATE financasmigration.titulos tit1 SET id_pessoa_reembolso = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE tit1.id_pessoa_reembolso = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 UPDATE financasmigration.titulos tit1 SET moedaestrangeira = moe2.moeda
@@ -1140,7 +1140,7 @@ AND for1.codigo = for2.codigo;
 UPDATE financasmigration.titulos tit1 SET id_pessoa = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE tit1.id_pessoa = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO financas.titulos
@@ -1748,7 +1748,7 @@ FROM   nsmigration.numeros_docfis;
 UPDATE nsmigration.contatos con1 SET id_pessoa = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.id_pessoa = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.contatos
@@ -1850,7 +1850,7 @@ FROM   nsmigration.relacoespessoas;
 UPDATE nsmigration.telefones tel1 SET id_pessoa = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE tel1.id_pessoa = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.telefones
@@ -3705,7 +3705,7 @@ AND pro2.cliente_id = pro3.cliente_id;
 UPDATE financasmigration.projetosclientes pro1 SET cliente_id = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE pro1.cliente_id = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO financas.projetosclientes
@@ -4340,7 +4340,7 @@ AND con2.descricao = con3.descricao;
 UPDATE nsmigration.conjuntosclientes con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.registro = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosclientes
@@ -4361,7 +4361,7 @@ AND con2.descricao = con3.descricao;
 UPDATE nsmigration.conjuntosfichas con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.registro = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosfichas
@@ -4383,7 +4383,7 @@ AND con2.descricao = con3.descricao;
 UPDATE nsmigration.conjuntosfornecedores con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.registro = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosfornecedores
@@ -4425,7 +4425,7 @@ AND con2.descricao = con3.descricao;
 UPDATE nsmigration.conjuntosrepresentantescomerciais con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.registro = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosrepresentantescomerciais
@@ -4446,7 +4446,7 @@ AND con2.descricao = con3.descricao;
 UPDATE nsmigration.conjuntosrepresentantestecnicos con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.registro = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosrepresentantestecnicos
@@ -4509,7 +4509,7 @@ AND con2.descricao = con3.descricao;
 UPDATE nsmigration.conjuntostecnicos con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.registro = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntostecnicos
@@ -4530,7 +4530,7 @@ AND con2.descricao = con3.descricao;
 UPDATE nsmigration.conjuntostransportadoras con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.registro = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntostransportadoras
@@ -4551,7 +4551,7 @@ AND con2.descricao = con3.descricao;
 UPDATE nsmigration.conjuntosvendedores con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
 WHERE con1.registro = pes1.id
-AND pes1.cnpj = pes2.cnpj 
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
 AND pes1.pessoa = pes2.pessoa;
 
 INSERT INTO ns.conjuntosvendedores
