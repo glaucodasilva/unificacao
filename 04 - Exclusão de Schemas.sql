@@ -6,3 +6,4 @@ DROP SCHEMA workflowmigration CASCADE;
 DROP SCHEMA servicosmigration CASCADE;
 DROP SCHEMA crmmigration CASCADE;
 DROP SCHEMA estoquemigration CASCADE;
+SELECT ns.permissoes();
