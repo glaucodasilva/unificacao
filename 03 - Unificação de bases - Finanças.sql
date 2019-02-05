@@ -1473,16 +1473,24 @@ FROM   nsmigration.empresasacessosusuarios;
 
 --ns.enderecos
 
+UPDATE nsmigration.enderecos end1 SET id_pessoa = pes2.id
+FROM nsmigration.pessoas pes1, ns.pessoas pes2
+WHERE end1.id_pessoa = pes1.id
+AND COALESCE(pes1.cnpj, '0') = COALESCE(pes2.cnpj, '0') 
+AND pes1.pessoa = pes2.pessoa;
+
 INSERT INTO ns.enderecos
             (tipologradouro,logradouro,numero,complemento,cep,bairro,
              tipoendereco,ufexterior,
              enderecopadrao,uf,pais,ibge,cidade,referencia,versao,endereco,
              id_pessoa,lastupdate,tenant)
-SELECT tipologradouro,logradouro,numero,complemento,cep,bairro,tipoendereco,
-       ufexterior,
-       enderecopadrao,uf,pais,ibge,cidade,referencia,versao,endereco,id_pessoa,
-       lastupdate,tenant
-FROM   nsmigration.enderecos;
+SELECT DISTINCT ON (end1.id_pessoa, end1.tipoendereco) end1.tipologradouro,end1.logradouro,end1.numero,end1.complemento,end1.cep,end1.bairro,end1.tipoendereco,
+       end1.ufexterior,
+       end1.enderecopadrao,end1.uf,end1.pais,end1.ibge,end1.cidade,end1.referencia,end1.versao,end1.endereco,end1.id_pessoa,
+       end1.lastupdate,end1.tenant
+FROM   nsmigration.enderecos end1
+LEFT JOIN ns.enderecos end2 ON end1.id_pessoa = end2.id_pessoa AND end1.tipoendereco = end2.tipoendereco
+WHERE end2.endereco is null;
 
 --ns.cadastros
 
@@ -1554,7 +1562,7 @@ INSERT INTO ns.conjuntos
             (conjunto,descricao,cadastro,codigo,lastupdate,tenant)
 SELECT con1.conjunto,con1.descricao,con1.cadastro,con1.codigo,con1.lastupdate,con1.tenant
 FROM   nsmigration.conjuntos con1
-LEFT JOIN ns.conjuntos con2 ON con1.codigo = con2.codigo AND con1.descricao = con2.descricao
+LEFT JOIN ns.conjuntos con2 ON con1.codigo = con2.codigo AND con1.descricao = con2.descricao AND con1.cadastro = con2.cadastro
 WHERE con2.conjunto is null;
 
 --ns.estabelecimentosconjuntos
@@ -1576,10 +1584,12 @@ INSERT INTO ns.estabelecimentosconjuntos
             (estabelecimentoconjunto,estabelecimento,conjunto,cadastro,permissao
              ,lastupdate,
              tenant)
-SELECT estabelecimentoconjunto,estabelecimento,conjunto,cadastro,permissao,
-       lastupdate,
-       tenant
-FROM   nsmigration.estabelecimentosconjuntos;
+SELECT con1.estabelecimentoconjunto,con1.estabelecimento,con1.conjunto,con1.cadastro,con1.permissao,
+       con1.lastupdate,
+       con1.tenant
+FROM   nsmigration.estabelecimentosconjuntos con1
+LEFT JOIN ns.estabelecimentosconjuntos con2 ON con1.estabelecimento = con2.estabelecimento AND con1.cadastro = con2.cadastro AND con1.conjunto = con2.conjunto
+WHERE con2.estabelecimentoconjunto is null;
 
 --ns.estabelecimentospessoas
 
@@ -4310,7 +4320,8 @@ UPDATE nsmigration.conjuntosclassificacoesparticipantes con1 SET conjunto = con3
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosclassificacoesparticipantes con1 SET registro = cla2.id
 FROM nsmigration.clapes cla1, ns.clapes cla2
@@ -4335,7 +4346,8 @@ UPDATE nsmigration.conjuntosclientes con1 SET conjunto = con3.conjunto
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosclientes con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
@@ -4356,7 +4368,8 @@ UPDATE nsmigration.conjuntosfichas con1 SET conjunto = con3.conjunto
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosfichas con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
@@ -4378,7 +4391,8 @@ UPDATE nsmigration.conjuntosfornecedores con1 SET conjunto = con3.conjunto
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosfornecedores con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
@@ -4399,7 +4413,8 @@ UPDATE nsmigration.conjuntosmodeloscontratos con1 SET conjunto = con3.conjunto
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosmodeloscontratos con1 SET registro = mod2.modelocontrato
 FROM financasmigration.modeloscontratos mod1, financas.modeloscontratos mod2
@@ -4420,7 +4435,8 @@ UPDATE nsmigration.conjuntosrepresentantescomerciais con1 SET conjunto = con3.co
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosrepresentantescomerciais con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
@@ -4441,7 +4457,8 @@ UPDATE nsmigration.conjuntosrepresentantestecnicos con1 SET conjunto = con3.conj
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosrepresentantestecnicos con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
@@ -4462,7 +4479,8 @@ UPDATE nsmigration.conjuntosservicos con1 SET conjunto = con3.conjunto
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosservicos con1 SET registro = ser2.id
 FROM servicosmigration.servicos ser1, servicos.servicos ser2
@@ -4482,7 +4500,8 @@ UPDATE nsmigration.conjuntosservicosdecatalogos con1 SET conjunto = con3.conjunt
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosservicosdecatalogos con1 SET registro = ser2.servicocatalogo
 FROM servicosmigration.servicoscatalogo ser1, servicos.servicoscatalogo ser2
@@ -4504,7 +4523,8 @@ UPDATE nsmigration.conjuntostecnicos con1 SET conjunto = con3.conjunto
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntostecnicos con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
@@ -4525,7 +4545,8 @@ UPDATE nsmigration.conjuntostransportadoras con1 SET conjunto = con3.conjunto
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntostransportadoras con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
@@ -4546,7 +4567,8 @@ UPDATE nsmigration.conjuntosvendedores con1 SET conjunto = con3.conjunto
 FROM nsmigration.conjuntos con2, ns.conjuntos con3
 WHERE con1.conjunto = con2.conjunto
 AND con2.codigo = con3.codigo
-AND con2.descricao = con3.descricao;
+AND con2.descricao = con3.descricao
+AND con2.cadastro = con3.cadastro;
 
 UPDATE nsmigration.conjuntosvendedores con1 SET registro = pes2.id
 FROM nsmigration.pessoas pes1, ns.pessoas pes2
